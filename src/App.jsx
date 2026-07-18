@@ -17,6 +17,8 @@ import CalendarPage from './pages/Calendar.jsx'
 import FollowUps from './pages/FollowUps.jsx'
 import Patients from './pages/Patients.jsx'
 import { ComingSoon } from './ui.jsx'
+import DoctorNotes from './pages/DoctorNotes.jsx'
+import { MOCK_VISITS, answerFor } from './mock/visits.js'
 import CallDrawer from './pages/CallDrawer.jsx'
 import BookingModal from './pages/BookingModal.jsx'
 import Landing2 from './pages/Landing2.jsx'
@@ -42,6 +44,8 @@ export default function App() {
   const [appointments, setAppointments] = useState(SEED_APPOINTMENTS)
   const [followups, setFollowups] = useState(SEED_FOLLOWUPS)
   const [memoryRows, setMemoryRows] = useState(MEMORY_ROWS)
+  const [visits, setVisits] = useState(MOCK_VISITS)
+  const [selectedVisitId, setSelectedVisitId] = useState(MOCK_VISITS[0]?.id || null)
   const [dashboardDate, setDashboardDate] = useState(NOW.toISOString().slice(0, 10))
   const [openCallId, setOpenCallId] = useState(null)
   const [bookingCallId, setBookingCallId] = useState(null)
@@ -248,6 +252,38 @@ export default function App() {
 
   const store = {
     calls, appointments, followups, memoryRows, dashboardDate, ringgSync,
+    visits, selectedVisitId,
+    selectVisit: (id) => setSelectedVisitId(id),
+    endVisit: (id) => setVisits((vs) => vs.map((v) => (v.id === id ? { ...v, status: 'draft' } : v))),
+    approveNote: (id) => setVisits((vs) => vs.map((v) => (v.id === id ? { ...v, status: 'reviewed' } : v))),
+    askQuestion: (id, q) =>
+      setVisits((vs) => vs.map((v) => (v.id === id ? { ...v, qa: [...(v.qa || []), { q, a: null }] } : v))),
+    resolveAnswer: (id) =>
+      setVisits((vs) =>
+        vs.map((v) => {
+          if (v.id !== id) return v
+          const qa = [...(v.qa || [])]
+          const last = qa[qa.length - 1]
+          if (last && last.a === null) qa[qa.length - 1] = { ...last, a: answerFor(last.q) }
+          return { ...v, qa }
+        }),
+      ),
+    approveInvoice: (id) =>
+      setVisits((vs) => vs.map((v) => (v.id === id ? { ...v, invoice: { ...v.invoice, status: 'finalized' } } : v))),
+    updateInvoiceLine: (id, lineId, patch) =>
+      setVisits((vs) =>
+        vs.map((v) =>
+          v.id === id
+            ? { ...v, invoice: { ...v.invoice, lines: v.invoice.lines.map((l) => (l.id === lineId ? { ...l, ...patch } : l)) } }
+            : v,
+        ),
+      ),
+    toggleFollowup: (id, fid) =>
+      setVisits((vs) =>
+        vs.map((v) =>
+          v.id === id ? { ...v, followups: v.followups.map((f) => (f.id === fid ? { ...f, done: !f.done } : f)) } : v,
+        ),
+      ),
     openCall: (id) => setOpenCallId(id),
     startBooking: (id) => setBookingCallId(id),
     openActions: (id) => setActionsCallId(id),
@@ -351,7 +387,7 @@ export default function App() {
           {view === 'calls' && <Calls store={store} />}
           {view === 'calendar' && <CalendarPage store={store} />}
           {view === 'timeline' && <ComingSoon label="Clinic Timeline" />}
-          {view === 'notes' && <ComingSoon label="Doctor Notes" />}
+          {view === 'notes' && <DoctorNotes store={store} />}
           {view === 'followups' && <FollowUps store={store} />}
           {view === 'patients' && <Patients store={store} />}
           {view === 'analytics' && <ComingSoon label="Analytics" />}

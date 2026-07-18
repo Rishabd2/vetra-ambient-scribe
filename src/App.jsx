@@ -458,12 +458,16 @@ function formatDashboardDate(date) {
 }
 
 function getInitialView() {
-  if (typeof window === 'undefined') return 'landing'
+  if (typeof window === 'undefined') return 'overview'
   const params = new URLSearchParams(window.location.search)
   if (window.location.pathname === '/revenue' || window.location.hash === '#revenue' || params.get('page') === 'revenue') {
     return 'revenue'
   }
-  return 'landing'
+  // Marketing landing is still reachable at ?page=landing; default is the dashboard.
+  if (params.get('page') === 'landing' || window.location.hash === '#landing') {
+    return 'landing'
+  }
+  return 'overview'
 }
 
 function mergeAppointments(sampleAppointments, liveAppointments) {

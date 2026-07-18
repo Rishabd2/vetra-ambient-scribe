@@ -266,6 +266,14 @@ export default function App() {
     endVisit: (id) => setVisits((vs) => vs.map((v) => (v.id === id ? { ...v, status: 'draft' } : v))),
     approveNote: (id) =>
       setVisits((vs) => vs.map((v) => (v.id === id ? { ...v, status: 'reviewed', reviewedBy: 'Dr. Martinez', reviewedAt: new Date().toISOString() } : v))),
+    // Edit a SOAP section: 'summary' takes a string, all others take an array.
+    updateSoap: (id, section, value) =>
+      setVisits((vs) => vs.map((v) => (v.id === id ? { ...v, soap: { ...(v.soap || {}), [section]: value } } : v))),
+    // Record a brand-new SOAP note (manual entry — vet-authored, not AI).
+    createVisit: (visit) => {
+      setVisits((vs) => [visit, ...vs])
+      setSelectedVisitId(visit.id)
+    },
     askQuestion: (id, q) =>
       setVisits((vs) => vs.map((v) => (v.id === id ? { ...v, qa: [...(v.qa || []), { q, a: null }] } : v))),
     resolveAnswer: (id) =>
@@ -297,6 +305,9 @@ export default function App() {
     openCall: (id) => setOpenCallId(id),
     startBooking: (id) => setBookingCallId(id),
     openActions: (id) => setActionsCallId(id),
+    addAppointment: (appt) => setAppointments((as) => [...as, { ...appt, id: appt.id || `ap-manual-${Date.now()}` }]),
+    updateAppointment: (apptId, patch) =>
+      setAppointments((as) => as.map((a) => (a.id === apptId ? { ...a, ...patch } : a))),
     toggleAction, addAction, markReviewed, setView,
   }
 

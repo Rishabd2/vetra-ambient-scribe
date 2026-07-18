@@ -55,7 +55,11 @@ export default async function handler(req, res) {
       liveIds.map((id) => vapiFetch(`/call/${id}`, { apiKey }).catch(() => null)),
     )
     const detailById = new Map(details.filter(Boolean).map((d) => [d.id, d]))
-    const calls = list.map((item) => normalizeVapiCall(detailById.get(item.id) || item, agent))
+    const calls = list
+      .map((item) => normalizeVapiCall(detailById.get(item.id) || item, agent))
+      // Drop empty/silent completed calls where no real pet name was captured
+      // (they'd show as "Pet · Caller" noise). Live calls are always kept.
+      .filter((c) => c.live || (c.pet?.name && c.pet.name !== 'Pet'))
 
     // Live calls from Supabase (written by the webhook in near-real-time).
     // Merge/override so an in-progress call shows instantly with fresh turns,

@@ -224,7 +224,7 @@ function VisitPanel({ visit, store }) {
             }}
           />
         ) : (
-          <StageView stage={stage} visit={visit} />
+          <StageView stage={stage} visit={visit} store={store} />
         )}
       </div>
     </Card>
@@ -307,34 +307,104 @@ const STAGES = [
   { id: 'transcript', label: 'Transcript' },
 ]
 
-function StageView({ stage, visit }) {
+function StageView({ stage, visit, store }) {
   const soap = visit.soap
+  const editable = visit.status === 'draft'
   if (!soap && stage !== 'charges' && stage !== 'discharge') {
     return <div className="text-sage text-sm py-8 text-center">No note generated yet.</div>
   }
 
   const genTag = (
-    <div className="text-[11px] font-mono text-sage/70 flex items-center gap-1.5 mb-4">
-      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2v4M12 18v4M2 12h4M18 12h4" strokeLinecap="round" /></svg>
-      AI-generated from transcript · draft
+    <div className="text-[11px] font-mono text-sage/70 flex items-center justify-between gap-2 mb-4">
+      <span className="flex items-center gap-1.5">
+        <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2v4M12 18v4M2 12h4M18 12h4" strokeLinecap="round" /></svg>
+        {visit.authored === 'vet' ? 'Vet-recorded · draft' : 'AI-generated from transcript · draft'}
+      </span>
+      {editable && <span className="text-pine">editable</span>}
     </div>
   )
+
+  const save = (section, value) => store.updateSoap(visit.id, section, value)
 
   if (stage === 'summary') {
     return (
       <div>
         {genTag}
-        <p className="text-sm leading-relaxed text-ink">{soap.summary}</p>
+        <EditableText
+          value={soap.summary}
+          editable={editable}
+          onSave={(v) => save('summary', v)}
+          placeholder="Clinical summary…"
+        />
       </div>
     )
   }
-  if (stage === 'subjective') return <StageBody tag={genTag}><Bullets items={soap.subjective} /></StageBody>
-  if (stage === 'objective') return <StageBody tag={genTag}><Bullets items={soap.objective} /></StageBody>
-  if (stage === 'assessment') return <StageBody tag={genTag}><Bullets items={soap.assessment} /></StageBody>
-  if (stage === 'plan') return <StageBody tag={genTag}><Bullets items={soap.plan} ordered /></StageBody>
+  if (stage === 'subjective') return <StageBody tag={genTag}><EditableList items={soap.subjective} editable={editable} onSave={(v) => save('subjective', v)} /></StageBody>
+  if (stage === 'objective') return <StageBody tag={genTag}><EditableList items={soap.objective} editable={editable} onSave={(v) => save('objective', v)} /></StageBody>
+  if (stage === 'assessment') return <StageBody tag={genTag}><EditableList items={soap.assessment} editable={editable} onSave={(v) => save('assessment', v)} /></StageBody>
+  if (stage === 'plan') return <StageBody tag={genTag}><EditableList items={soap.plan} editable={editable} onSave={(v) => save('plan', v)} ordered /></StageBody>
   if (stage === 'discharge') return <DischargeView visit={visit} tag={genTag} />
   if (stage === 'charges') return <ChargesView visit={visit} tag={genTag} />
   return null
+}
+
+// Click-to-edit paragraph. Draft only; shows Save/Cancel while editing.
+function EditableText({ value, editable, onSave, placeholder }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(value || '')
+  if (!editable) return <p className="text-sm leading-relaxed text-ink">{value}</p>
+  if (!editing) {
+    return (
+      <div className="group relative">
+        <p className="text-sm leading-relaxed text-ink">{value || <span className="text-sage/60">{placeholder}</span>}</p>
+        <button onClick={() => { setDraft(value || ''); setEditing(true) }} className="mt-2 text-[12px] text-pine hover:underline">Edit</button>
+      </div>
+    )
+  }
+  return (
+    <div>
+      <textarea
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        rows={4}
+        className="w-full rounded-lg border border-pine/40 px-3 py-2 text-sm focus:outline-none focus:border-pine"
+      />
+      <div className="mt-2 flex gap-2">
+        <Button variant="primary" onClick={() => { onSave(draft.trim()); setEditing(false) }}>Save</Button>
+        <Button variant="secondary" onClick={() => setEditing(false)}>Cancel</Button>
+      </div>
+    </div>
+  )
+}
+
+// Click-to-edit bullet list. One item per line while editing.
+function EditableList({ items, editable, onSave, ordered }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState((items || []).join('\n'))
+  if (!editable) return <Bullets items={items} ordered={ordered} />
+  if (!editing) {
+    return (
+      <div>
+        <Bullets items={items} ordered={ordered} />
+        <button onClick={() => { setDraft((items || []).join('\n')); setEditing(true) }} className="mt-2 text-[12px] text-pine hover:underline">Edit</button>
+      </div>
+    )
+  }
+  return (
+    <div>
+      <textarea
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        rows={Math.max(4, (items || []).length + 1)}
+        placeholder="One item per line"
+        className="w-full rounded-lg border border-pine/40 px-3 py-2 text-sm font-mono focus:outline-none focus:border-pine"
+      />
+      <div className="mt-2 flex gap-2">
+        <Button variant="primary" onClick={() => { onSave(draft.split('\n').map((s) => s.trim()).filter(Boolean)); setEditing(false) }}>Save</Button>
+        <Button variant="secondary" onClick={() => setEditing(false)}>Cancel</Button>
+      </div>
+    </div>
+  )
 }
 
 function StageBody({ tag, children }) {

@@ -91,16 +91,14 @@ function VisitPanel({ visit, store }) {
   const [tab, setTab] = useState(isLive ? 'transcript' : 'notes')
   const [generating, setGenerating] = useState(false)
 
-  // Live transcript streaming: reveal one line every 1.5s.
+  // Live transcript streaming: reveal one line every 1.5s. Component is keyed
+  // by visit.id, so initial state is correct per visit — the effect only drives
+  // the live interval.
   const [revealed, setRevealed] = useState(isLive ? 3 : visit.transcript.length)
   const scrollRef = useRef(null)
 
   useEffect(() => {
-    if (!isLive) {
-      setRevealed(visit.transcript.length)
-      return
-    }
-    setRevealed(3)
+    if (!isLive) return
     const t = setInterval(() => {
       setRevealed((n) => {
         if (n >= visit.transcript.length) {
@@ -111,7 +109,7 @@ function VisitPanel({ visit, store }) {
       })
     }, 1500)
     return () => clearInterval(t)
-  }, [isLive, visit.id, visit.transcript.length])
+  }, [isLive, visit.transcript.length])
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight

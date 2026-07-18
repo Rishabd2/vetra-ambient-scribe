@@ -5,6 +5,8 @@ import {
   VAPI_POLL_MS,
   appointmentsFromCalls,
   fetchVapiCalls,
+  fetchVisits,
+  visitRowToVisit,
   followupsFromCalls,
   getDashboardDate,
   memoryRowsFromCalls,
@@ -25,6 +27,8 @@ import Landing2 from './pages/Landing2.jsx'
 import ActionsPopup from './pages/ActionsPopup.jsx'
 import RevenueUplift from './pages/RevenueUplift.jsx'
 import Settings from './pages/Settings.jsx'
+import Timeline from './pages/Timeline.jsx'
+import Analytics from './pages/Analytics.jsx'
 
 const ni = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }
 const NAV = [
@@ -49,6 +53,7 @@ export default function App() {
   const [selectedVisitId, setSelectedVisitId] = useState(MOCK_VISITS[0]?.id || null)
   const [dashboardDate, setDashboardDate] = useState(NOW.toISOString().slice(0, 10))
   const [openCallId, setOpenCallId] = useState(null)
+  const [selectedCallId, setSelectedCallId] = useState(null)
   const [bookingCallId, setBookingCallId] = useState(null)
   const [actionsCallId, setActionsCallId] = useState(null)
   const [toast, setToast] = useState(null)
@@ -141,6 +146,29 @@ export default function App() {
       cancelled = true
       window.clearTimeout(timer)
     }
+  }, [])
+
+  // Poll completed visits (SOAP + invoice + follow-ups generated at call-end)
+  // and prepend real ones ahead of the mock demo visits.
+  useEffect(() => {
+    let cancelled = false
+    let timer
+    const pull = async () => {
+      try {
+        const payload = await fetchVisits()
+        if (cancelled || !payload.connected) return
+        const real = (payload.visits || []).map(visitRowToVisit)
+        if (real.length) {
+          setVisits(() => {
+            const realIds = new Set(real.map((v) => v.id))
+            return [...real, ...MOCK_VISITS.filter((m) => !realIds.has(m.id))]
+          })
+        }
+      } catch { /* keep mock visits on failure */ }
+    }
+    pull()
+    timer = window.setInterval(pull, 10000)
+    return () => { cancelled = true; window.clearInterval(timer) }
   }, [])
 
   const toggleAction = (callId, actionId) => {
@@ -260,6 +288,8 @@ export default function App() {
 
   const store = {
     calls, appointments, followups, memoryRows, dashboardDate, vapiSync,
+    selectedCallId,
+    selectCall: (id) => setSelectedCallId(id),
     injectLiveTurn: (callId, turns) =>
       updateCalls((cs) => cs.map((c) => (c.id === callId ? { ...c, transcript: [...(c.transcript || []), ...turns] } : c))),
     visits, selectedVisitId,

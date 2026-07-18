@@ -1,5 +1,7 @@
 import { handleVapiToolCalls } from '../server/vapi-adapter.js'
 import { upsertLiveCall, endLiveCall } from '../server/live-calls.js'
+import { buildVisit, upsertVisit } from '../server/visits.js'
+import { upsertPatientMemory } from '../server/sample-clinic-data.js'
 
 // Single Vapi server endpoint (configured on the assistant + tools as
 // /webhooks/vapi). Handles tool-call dispatch and acknowledges other events.
@@ -65,6 +67,27 @@ export default async function handler(req, res) {
     }
     if (callId && (type === 'end-of-call-report' || type === 'hang')) {
       await endLiveCall(callId)
+      // Generate the draft visit (SOAP + invoice + follow-ups) from Vapi's
+      // structured analysis and persist it, then update patient memory.
+      if (type === 'end-of-call-report') {
+        const analysis = message.analysis || {}
+        const structured = analysis.structuredData || {}
+        const summary = analysis.summary || message.summary || ''
+        const turns = turnsFromMessage(message)
+        if (structured.pet_name || structured.owner_name || summary) {
+          const visit = buildVisit({ callId, structured, summary, transcript: turns })
+          await upsertVisit(visit)
+          await upsertPatientMemory({
+            owner_name: structured.owner_name,
+            pet_name: structured.pet_name,
+            pet_species: structured.species,
+            pet_breed: structured.breed,
+            pet_age: structured.age,
+            prior_issue: structured.reason,
+            last_summary: summary,
+          }).catch(() => {})
+        }
+      }
     }
   } catch (err) {
     console.error('live-call persist failed', err?.message)

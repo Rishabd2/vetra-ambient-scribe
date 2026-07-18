@@ -3,9 +3,9 @@ import { Card, Avatar, Button } from '../ui.jsx'
 import { MOCK_PATIENTS } from '../mock/visits.js'
 import Invoice from './Invoice.jsx'
 
-// Patients — full client & patient directory. Grid of cards; each opens a
-// detail drawer (stat tiles, owner, preventive care, appointments, case
-// history, recent calls, documents).
+// Patients — master-detail workspace. Left: searchable patient rail (real
+// callers from completed calls merge ahead of the mock roster). Right: a wide
+// patient record with identity, history, and the ambient-visit SOAP + invoice.
 
 const STATUS_LABEL = {
   'checked-in': 'Checked-in',
@@ -19,105 +19,112 @@ export default function Patients({ store }) {
   const [openId, setOpenId] = useState(null)
   const [query, setQuery] = useState('')
 
-  const patients = MOCK_PATIENTS
+  // Real patients from completed calls (fromCall visits) merge ahead of the
+  // mock roster so new callers show up as patient cards.
+  const realVisits = (store?.visits || []).filter((v) => v.fromCall)
+  const realPatients = realVisits.map((v) => ({
+    id: v.patient.id,
+    name: v.patient.name,
+    species: v.patient.species || '—',
+    breed: v.patient.breed || 'New patient',
+    age: v.patient.age || '—',
+    weight: v.patient.weight || '—',
+    owner: v.patient.owner.name,
+    phone: v.patient.owner.phone || '—',
+    status: 'follow-up',
+    statusText: v.visitType,
+    lastVisit: (v.startedAt || '').slice(0, 10),
+    visits: 1,
+    preventive: v.patient.isNew ? 'New patient — establish baseline wellness plan' : '',
+    appointments: [],
+    caseHistory: [{ label: v.visitType, date: (v.startedAt || '').slice(0, 10), doctor: 'Dr. Martinez', tag: 'From call' }],
+    calls: [],
+    documents: [],
+  }))
+  const mockFiltered = MOCK_PATIENTS.filter((m) => !realPatients.some((r) => r.id === m.id))
+  const patients = [...realPatients, ...mockFiltered]
+
   const q = query.trim().toLowerCase()
   const filtered = q
     ? patients.filter((p) => `${p.name} ${p.owner} ${p.breed} ${p.species}`.toLowerCase().includes(q))
     : patients
 
-  const open = patients.find((p) => p.id === openId)
-  // Link a patient to its ambient-visit record (SOAP + invoice live there).
+  const open = patients.find((p) => p.id === openId) || filtered[0]
   const openVisit = open ? (store?.visits || []).find((v) => v.patient.id === open.id) : null
 
   return (
-    <div className="space-y-5 fade-up">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight">Patients</h2>
-          <p className="text-sm text-sage">Client &amp; patient directory</p>
-        </div>
-        <div className="relative w-full sm:w-72">
+    <div className="flex gap-5 fade-up h-[calc(100vh-8.5rem)]">
+      {/* Left rail */}
+      <div className="w-[320px] shrink-0 flex flex-col">
+        <div className="relative mb-3">
           <svg viewBox="0 0 24 24" className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-sage" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4-4" strokeLinecap="round" /></svg>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name, owner, or breed"
+            placeholder="Search name, owner, breed"
             className="w-full rounded-xl border border-line bg-white pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-pine/50"
           />
         </div>
+        <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+          {filtered.map((p) => (
+            <PatientRow key={p.id} p={p} active={p.id === open?.id} onClick={() => setOpenId(p.id)} />
+          ))}
+          {filtered.length === 0 && <div className="text-center text-sage text-sm py-10">No patients match “{query}”.</div>}
+        </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filtered.map((p) => (
-          <PatientCard key={p.id} p={p} onClick={() => setOpenId(p.id)} />
-        ))}
+      {/* Right detail workspace */}
+      <div className="flex-1 min-w-0 overflow-y-auto">
+        {open ? <PatientDetail key={open.id} patient={open} visit={openVisit} store={store} /> : (
+          <Card className="p-10 text-center text-sage">Select a patient.</Card>
+        )}
       </div>
-      {filtered.length === 0 && <Card className="p-10 text-center text-sage text-sm">No patients match “{query}”.</Card>}
-
-      {open && <PatientDrawer patient={open} visit={openVisit} store={store} onClose={() => setOpenId(null)} />}
     </div>
   )
 }
 
-function PatientCard({ p, onClick }) {
+function PatientRow({ p, active, onClick }) {
   return (
-    <button onClick={onClick} className="text-left group">
-      <Card className="p-4 hover:border-pine/30 hover:shadow-sm transition-all h-full">
-        <div className="flex items-center gap-3">
-          <Avatar species={p.species} />
-          <div className="min-w-0 flex-1">
-            <div className="font-semibold truncate">{p.name}</div>
-            <div className="text-[12px] text-sage truncate">{p.breed}</div>
-          </div>
-          <span className="text-sage/50 group-hover:text-pine transition-colors">›</span>
+    <button
+      onClick={onClick}
+      className={`w-full text-left p-3 rounded-xl border transition-colors ${
+        active ? 'border-pine/40 bg-pine-light' : 'border-line bg-white hover:border-pine/25'
+      }`}
+    >
+      <div className="flex items-center gap-2.5">
+        <Avatar species={p.species} />
+        <div className="min-w-0 flex-1">
+          <div className="font-semibold text-sm truncate">{p.name}</div>
+          <div className="text-[12px] text-sage truncate">{p.breed} · {p.owner}</div>
         </div>
-
-        <div className="mt-3 space-y-2 text-[12.5px]">
-          <div className="flex items-center gap-1.5 text-sage">
-            <UserIcon /> <span className="truncate">{p.owner}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sage">{p.age} · {p.weight}</span>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-cream border border-line text-sage">{p.species}</span>
-          </div>
-        </div>
-
-        <div className="mt-3 text-[12px] px-2.5 py-1.5 rounded-lg bg-cream/70 border border-line/70 truncate">
-          <span className="text-sage">{STATUS_LABEL[p.status] || 'Status'}:</span> <span className="text-ink">{p.statusText}</span>
-        </div>
-
-        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-sage/80">
-          <CalIcon /> Last visit: {p.lastVisit}
-        </div>
-      </Card>
+        <span className="text-[10px] px-2 py-0.5 rounded-full bg-cream border border-line text-sage shrink-0">{p.species}</span>
+      </div>
+      <div className="mt-2 text-[11.5px] text-sage truncate">{STATUS_LABEL[p.status] || 'Status'}: <span className="text-ink">{p.statusText}</span></div>
     </button>
   )
 }
 
-function PatientDrawer({ patient: p, visit, store, onClose }) {
+function PatientDetail({ patient: p, visit, store }) {
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-ink/25" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-cream h-full overflow-y-auto shadow-xl fade-up">
-        {/* Header */}
-        <div className="sticky top-0 bg-cream/95 backdrop-blur border-b border-line px-5 py-4 flex items-start gap-3">
-          <Avatar species={p.species} />
-          <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-semibold">{p.name}</h2>
-            <div className="text-sm text-sage">{p.breed} · {p.species}</div>
-          </div>
-          <button onClick={onClose} className="text-sage hover:text-ink text-xl leading-none">✕</button>
+    <Card className="overflow-hidden">
+      {/* Header */}
+      <div className="px-5 py-4 border-b border-line flex items-start gap-3">
+        <Avatar species={p.species} />
+        <div className="flex-1 min-w-0">
+          <h2 className="text-xl font-semibold">{p.name}</h2>
+          <div className="text-sm text-sage">{p.breed} · {p.species} · {p.owner}</div>
         </div>
+      </div>
 
-        <div className="p-5 space-y-6">
-          {/* Stat tiles */}
+      <div className="p-5 grid lg:grid-cols-2 gap-6">
+        {/* Left detail column */}
+        <div className="space-y-6">
           <div className="grid grid-cols-3 gap-3">
-            <Stat icon={<CalIcon />} value={p.age.replace(' years', 'y').replace(' year', 'y')} label="Age" />
+            <Stat icon={<CalIcon />} value={String(p.age).replace(' years', 'y').replace(' year', 'y')} label="Age" />
             <Stat icon={<WeightIcon />} value={p.weight} label="Weight" />
             <Stat icon={<StethIcon />} value={p.visits} label="Visits" />
           </div>
 
-          {/* Owner */}
           <div className="flex items-center gap-3 rounded-xl bg-white border border-line px-4 py-3">
             <UserIcon />
             <div>
@@ -126,7 +133,6 @@ function PatientDrawer({ patient: p, visit, store, onClose }) {
             </div>
           </div>
 
-          {/* Preventive care */}
           {p.preventive && (
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
               <div className="flex items-center gap-1.5 text-amber-700 font-medium text-sm">⚠ Upcoming Preventive Care</div>
@@ -134,10 +140,6 @@ function PatientDrawer({ patient: p, visit, store, onClose }) {
             </div>
           )}
 
-          {/* SOAP note + invoice from the ambient visit (the workflow) */}
-          {visit && <VisitWorkflow visit={visit} store={store} />}
-
-          {/* Appointments */}
           {p.appointments.length > 0 && (
             <Section icon={<CalIcon />} title="Appointments" count={p.appointments.length}>
               {p.appointments.map((a, i) => (
@@ -152,7 +154,6 @@ function PatientDrawer({ patient: p, visit, store, onClose }) {
             </Section>
           )}
 
-          {/* Case history */}
           {p.caseHistory.length > 0 && (
             <Section icon={<ClockIcon />} title="Case History">
               {p.caseHistory.map((c, i) => (
@@ -167,7 +168,6 @@ function PatientDrawer({ patient: p, visit, store, onClose }) {
             </Section>
           )}
 
-          {/* Recent calls */}
           {p.calls.length > 0 && (
             <Section icon={<PhoneIcon />} title="Recent Calls" count={p.calls.length}>
               {p.calls.map((c, i) => (
@@ -183,7 +183,6 @@ function PatientDrawer({ patient: p, visit, store, onClose }) {
             </Section>
           )}
 
-          {/* Documents */}
           {p.documents.length > 0 && (
             <Section icon={<DocIcon />} title="Documents">
               {p.documents.map((d, i) => (
@@ -194,8 +193,17 @@ function PatientDrawer({ patient: p, visit, store, onClose }) {
             </Section>
           )}
         </div>
+
+        {/* Right clinical column: SOAP + invoice from the ambient visit */}
+        <div className="space-y-6">
+          {visit ? <VisitWorkflow visit={visit} store={store} /> : (
+            <div className="rounded-xl border border-dashed border-line px-4 py-8 text-center text-sage text-sm">
+              No ambient visit on record for {p.name}. New calls and recorded notes will appear here.
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </Card>
   )
 }
 
@@ -204,7 +212,6 @@ function VisitWorkflow({ visit, store }) {
   const noteReviewed = visit.status === 'reviewed'
   return (
     <div className="space-y-4">
-      {/* SOAP note */}
       {soap && (
         <div>
           <div className="flex items-center justify-between gap-2 mb-2">
@@ -234,7 +241,6 @@ function VisitWorkflow({ visit, store }) {
         </div>
       )}
 
-      {/* Invoice */}
       {visit.invoice && (
         <div>
           <div className="flex items-center gap-2 mb-2">

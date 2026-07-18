@@ -21,6 +21,7 @@ function localApiRoutes() {
     '/api/vapi-webhook': () => import('./api/vapi-webhook.js'),
     '/webhooks/vapi': () => import('./api/vapi-webhook.js'),
     '/api/vapi-say': () => import('./api/vapi-say.js'),
+    '/api/visits': () => import('./api/visits.js'),
     '/api/cal/slots': () => import('./api/cal/slots.js'),
     '/api/cal/book-appointment': () => import('./api/book_appointment.js'),
     '/api/book_appointment': () => import('./api/book_appointment.js'),

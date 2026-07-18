@@ -1,6 +1,6 @@
-# Vetra — Veterinary Ambient Scribe & Front-Desk AI
+# Vetra — veterinary  AI  copilot for your practice.
 
-Vetra is an **ambient AI scribe and front-desk copilot for veterinary clinics.** A
+Vetra is a copilot for veterinary clinics.** A
 voice agent (built on [Vapi](https://vapi.ai)) sits in on the exam-room visit, and
 Vetra turns that live conversation into finished clinical work — a SOAP note, an
 updated patient chart, follow-up tasks, and a SOAP-derived invoice — while the vet

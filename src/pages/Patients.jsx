@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Card, Avatar, Button } from '../ui.jsx'
 import { MOCK_PATIENTS } from '../mock/visits.js'
+import Invoice from './Invoice.jsx'
 
 // Patients — full client & patient directory. Grid of cards; each opens a
 // detail drawer (stat tiles, owner, preventive care, appointments, case
@@ -14,7 +15,7 @@ const STATUS_LABEL = {
   seen: 'Seen',
 }
 
-export default function Patients() {
+export default function Patients({ store }) {
   const [openId, setOpenId] = useState(null)
   const [query, setQuery] = useState('')
 
@@ -25,6 +26,8 @@ export default function Patients() {
     : patients
 
   const open = patients.find((p) => p.id === openId)
+  // Link a patient to its ambient-visit record (SOAP + invoice live there).
+  const openVisit = open ? (store?.visits || []).find((v) => v.patient.id === open.id) : null
 
   return (
     <div className="space-y-5 fade-up">
@@ -51,7 +54,7 @@ export default function Patients() {
       </div>
       {filtered.length === 0 && <Card className="p-10 text-center text-sage text-sm">No patients match “{query}”.</Card>}
 
-      {open && <PatientDrawer patient={open} onClose={() => setOpenId(null)} />}
+      {open && <PatientDrawer patient={open} visit={openVisit} store={store} onClose={() => setOpenId(null)} />}
     </div>
   )
 }
@@ -91,7 +94,7 @@ function PatientCard({ p, onClick }) {
   )
 }
 
-function PatientDrawer({ patient: p, onClose }) {
+function PatientDrawer({ patient: p, visit, store, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-ink/25" onClick={onClose} />
@@ -130,6 +133,9 @@ function PatientDrawer({ patient: p, onClose }) {
               <div className="text-[13px] text-sage mt-1">· {p.preventive}</div>
             </div>
           )}
+
+          {/* SOAP note + invoice from the ambient visit (the workflow) */}
+          {visit && <VisitWorkflow visit={visit} store={store} />}
 
           {/* Appointments */}
           {p.appointments.length > 0 && (
@@ -189,6 +195,67 @@ function PatientDrawer({ patient: p, onClose }) {
           )}
         </div>
       </div>
+    </div>
+  )
+}
+
+function VisitWorkflow({ visit, store }) {
+  const soap = visit.soap
+  const noteReviewed = visit.status === 'reviewed'
+  return (
+    <div className="space-y-4">
+      {/* SOAP note */}
+      {soap && (
+        <div>
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sage"><DocIcon /></span>
+              <h3 className="font-semibold">SOAP Note</h3>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${noteReviewed ? 'bg-pine-light text-pine border-pine/20' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                {noteReviewed ? 'Reviewed' : 'Draft'}
+              </span>
+            </div>
+            {store && (
+              <button onClick={() => { store.selectVisit(visit.id); store.setView('notes') }} className="text-[12px] text-pine hover:underline shrink-0">
+                Open in Doctor Notes →
+              </button>
+            )}
+          </div>
+          <div className="rounded-xl border border-line bg-white px-4 py-3 space-y-3 text-[13px]">
+            <p className="text-ink leading-relaxed">{soap.summary}</p>
+            <SoapBlock label="Assessment" items={soap.assessment} />
+            <SoapBlock label="Plan" items={soap.plan} />
+          </div>
+          {store && !noteReviewed && (
+            <div className="mt-2 flex justify-end">
+              <Button variant="primary" onClick={() => store.approveNote(visit.id)}>Approve note</Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Invoice */}
+      {visit.invoice && (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-sage">$</span>
+            <h3 className="font-semibold">Invoice</h3>
+          </div>
+          <Invoice visit={visit} store={store} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SoapBlock({ label, items }) {
+  if (!items?.length) return null
+  return (
+    <div>
+      <div className="font-medium text-ink mb-1">{label}</div>
+      <ul className="list-disc pl-5 space-y-0.5 text-sage">
+        {items.map((it, i) => <li key={i} className="leading-relaxed">{it}</li>)}
+      </ul>
     </div>
   )
 }

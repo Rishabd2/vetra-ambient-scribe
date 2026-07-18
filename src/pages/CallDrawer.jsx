@@ -28,8 +28,8 @@ export default function CallDrawer({ call, calls, onClose, onBook, onToggleActio
                 {call.caller.name} · {call.caller.phone}
               </div>
               <div className="font-mono text-[11px] text-sage mt-1.5 break-words">
-                {fmtDay(call.receivedAt)} {fmtTime(call.receivedAt)} · {fmtDur(call.duration)} · {agent?.name} · {CLINICS[call.clinic].short}
-                {call.real && <span className="ml-2 text-pine">● live Ringg call</span>}
+                {fmtDay(call.receivedAt)} {fmtTime(call.receivedAt)} · {fmtDur(call.duration)} · {agent?.name || call.agentName}{call.clinic && CLINICS[call.clinic] ? ` · ${CLINICS[call.clinic].short}` : ''}
+                {(call.real || call.source === 'vapi') && <span className="ml-2 text-pine">● Vapi call</span>}
               </div>
             </div>
             <button onClick={onClose} className="text-sage hover:text-ink text-lg leading-none p-1 shrink-0">✕</button>

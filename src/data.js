@@ -8,40 +8,15 @@ export const CLINICS = {
 
 export const AGENTS = [
   {
-    id: '864b0c36-7b52-4f42-9aeb-77445f37b7b2',
-    name: 'Priya — Ringg Intake',
-    ringgName: 'vetra_RinggMirror',
+    id: '98ef7647-8552-40fa-a547-2c8a733b3e3e',
+    name: 'Haley — Urbana Paws front desk',
     clinic: 'small',
-    role: 'Production inbound front desk · intake, triage & booking requests',
-    number: '+1 (808) 515-8398',
+    role: 'Voice scheduling assistant · intake, triage & booking',
+    number: '+1 (779) 771-3524',
     status: 'live',
-    tools: ['greetings', 'lookup_patient', 'check_availability_of_slots', 'book_appointment', 'cancel_appointment', 'reschedule_appointment', 'check_due_care', 'save_call_context', 'notify_emergency_team', 'call_transfer'],
+    tools: ['lookupPatient', 'getAvailableSlots', 'bookAppointment', 'rescheduleAppointment', 'cancelAppointment'],
     description:
-      'Production Ringg assistant connected to the live dashboard. New inbound calls appear in the Calls queue with transcripts, custom variables, analysis and tool logs.',
-  },
-  {
-    id: '44ab6107-c852-432f-963f-0dc3588f20d4',
-    name: 'Priya — Triage',
-    ringgName: 'Priya_RinggMirror',
-    clinic: 'small',
-    role: 'Front desk · intake, triage & booking',
-    number: '+1 (208) 470-8994',
-    status: 'live',
-    tools: ['check_availability_of_slots', 'book_appointment', 'save_call_context'],
-    description:
-      'Answers every inbound call at the primary clinic. Collects owner, pet and symptom details, scores urgency, books routine and same-day visits on the calendar, and escalates emergencies with full context.',
-  },
-  {
-    id: '67d57938-c98b-453e-a980-13813c24ab0c',
-    name: 'Priya — Emergency',
-    ringgName: 'Vetra_Recall',
-    clinic: 'emergency',
-    role: 'Emergency intake · receives warm handoffs',
-    number: 'Outbound · triggered on escalation',
-    status: 'live',
-    tools: ['check_availability_of_slots', 'book_appointment'],
-    description:
-      'Receives the transferred call with owner name, pet name and reported symptoms already loaded — the owner never repeats themselves. Confirms the case, checks ER availability, and schedules treatment.',
+      'Production Vapi assistant for Urbana Paws Clinic. Inbound calls appear in the Inbox with live transcripts; on completion each call produces a SOAP note, patient-card update, follow-ups and an invoice.',
   },
 ]
 

@@ -1,0 +1,99 @@
+import {
+  DEFAULT_VAPI_ASSISTANT_ID,
+  DEFAULT_VAPI_ASSISTANT_NAME,
+  appointmentsFromCalls,
+  followupsFromCalls,
+  inferDashboardDate,
+  memoryRowsFromCalls,
+  normalizeVapiCall,
+} from '../server/vapi-normalize.js'
+
+const VAPI_BASE_URL = process.env.VAPI_API_BASE || 'https://api.vapi.ai'
+
+export default async function handler(req, res) {
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Allow', 'GET, OPTIONS')
+    res.status(204).end()
+    return
+  }
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET, OPTIONS')
+    res.status(405).json({ error: 'Method not allowed' })
+    return
+  }
+
+  const apiKey = process.env.VAPI_API_KEY
+  const assistantId =
+    cleanText(queryParam(req.query.assistantId)) ||
+    cleanText(process.env.VAPI_ASSISTANT_ID) ||
+    DEFAULT_VAPI_ASSISTANT_ID
+  const agent = { id: assistantId, name: process.env.VAPI_ASSISTANT_NAME || DEFAULT_VAPI_ASSISTANT_NAME }
+  const limit = clampNumber(req.query.limit, 1, 100, 20)
+
+  if (!apiKey) {
+    res.status(200).json({
+      connected: false,
+      agent,
+      calls: [],
+      message: 'Set VAPI_API_KEY in Vercel to load live calls.',
+    })
+    return
+  }
+
+  try {
+    const params = new URLSearchParams({ assistantId, limit: String(limit) })
+    const raw = await vapiFetch(`/call?${params}`, { apiKey })
+    const list = Array.isArray(raw) ? raw : Array.isArray(raw?.results) ? raw.results : []
+    const calls = list.map((item) => normalizeVapiCall(item, agent))
+
+    res.setHeader('Cache-Control', 'no-store, max-age=0')
+    res.status(200).json({
+      connected: true,
+      agent,
+      syncedAt: new Date().toISOString(),
+      dashboardDate: inferDashboardDate(calls),
+      calls,
+      appointments: appointmentsFromCalls(calls),
+      followups: followupsFromCalls(calls),
+      memoryRows: memoryRowsFromCalls(calls),
+    })
+  } catch (error) {
+    res.status(500).json({
+      connected: false,
+      agent,
+      calls: [],
+      error: error instanceof Error ? error.message : 'Unable to load Vapi calls',
+    })
+  }
+}
+
+async function vapiFetch(path, { apiKey }) {
+  const response = await fetch(new URL(path.replace(/^\//, ''), ensureTrailingSlash(VAPI_BASE_URL)), {
+    headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' },
+  })
+  const text = await response.text()
+  const body = parseJson(text)
+  if (!response.ok) {
+    throw new Error(body?.message || text || `Vapi request failed with ${response.status}`)
+  }
+  return body
+}
+
+function ensureTrailingSlash(value) {
+  return value.endsWith('/') ? value : `${value}/`
+}
+function queryParam(value) {
+  return Array.isArray(value) ? value[0] : value
+}
+function parseJson(value) {
+  if (!value) return null
+  try { return JSON.parse(value) } catch { return null }
+}
+function cleanText(value) {
+  return value === null || value === undefined ? '' : String(value).trim()
+}
+function clampNumber(value, min, max, fallback) {
+  const n = Number(value)
+  if (!Number.isFinite(n)) return fallback
+  return Math.min(max, Math.max(min, n))
+}

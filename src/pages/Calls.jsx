@@ -13,12 +13,18 @@ export default function Calls({ store }) {
   const [tab, setTab] = useState('needs_action')
   const { calls } = store
 
+  const liveCalls = calls.filter((c) => c.live)
+
   const filtered = (tab === 'all' ? calls : calls.filter((c) => c.status === tab)).slice().sort(
     (a, b) => new Date(b.receivedAt) - new Date(a.receivedAt),
   )
 
   return (
     <div className="space-y-4 fade-up">
+      {liveCalls.map((c) => (
+        <LiveTranscript key={c.id} call={c} onOpen={() => store.openCall(c.id)} />
+      ))}
+
       <div className="flex items-center gap-1.5">
         {TABS.map((t) => {
           const n = t.id === 'all' ? calls.length : calls.filter((c) => c.status === t.id).length
@@ -69,13 +75,13 @@ export default function Calls({ store }) {
                 <td className="px-5 py-4 align-top">
                   <div className="text-[13px] max-w-[220px] break-words">{c.reason}</div>
                   <div className="mt-1 flex items-center gap-1.5 flex-wrap">
-                    {c.source === 'ringg' && (
+                    {c.source === 'vapi' && (
                       <span className={`font-mono text-[10px] px-2 py-0.5 rounded-full border ${
                         c.live
                           ? 'border-pine/30 bg-pine-light text-pine'
                           : 'border-line bg-cream text-sage'
                       }`}>
-                        {c.live ? 'live now' : c.callState || 'ringg'}
+                        {c.live ? 'live now' : c.callState || 'vapi'}
                       </span>
                     )}
                     <StatusBadge status={c.status} />
@@ -120,6 +126,34 @@ function ActionChip({ call, onClick }) {
     >
       ⚡ {open} action{open > 1 ? 's' : ''}
     </button>
+  )
+}
+
+function LiveTranscript({ call, onOpen }) {
+  const turns = call.transcript || []
+  const last = turns.slice(-6)
+  return (
+    <Card className="overflow-hidden border-pine/30">
+      <div className="px-5 py-3 border-b border-line flex items-center justify-between gap-3 bg-pine-light/40">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="w-2 h-2 rounded-full bg-pine live-dot shrink-0" />
+          <span className="font-mono text-[11px] uppercase tracking-wider text-pine shrink-0">Live call</span>
+          <span className="text-sm font-medium truncate">{call.caller.name} · {call.caller.phone}</span>
+        </div>
+        <button onClick={onOpen} className="text-[12px] text-pine hover:underline shrink-0">Open →</button>
+      </div>
+      <div className="px-5 py-4 space-y-2.5 max-h-64 overflow-y-auto">
+        {last.length === 0 && <div className="text-sm text-sage">Connecting… waiting for the first words.</div>}
+        {last.map(([role, text], i) => (
+          <div key={i} className="flex gap-2.5">
+            <span className={`font-mono text-[10px] mt-1 w-12 shrink-0 ${role === 'agent' ? 'text-pine' : 'text-sage'}`}>
+              {role === 'agent' ? 'HALEY' : 'CALLER'}
+            </span>
+            <p className={`text-[13px] leading-relaxed ${role === 'agent' ? 'text-ink' : 'text-sage'}`}>{text}</p>
+          </div>
+        ))}
+      </div>
+    </Card>
   )
 }
 

@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     transfer_number: transferNumber,
     transfer_destination: 'Vetra Emergency Routing',
     transfer_tool: 'call_transfer',
-    next_action: `Use Ringg call_transfer to route the live caller to ${transferNumber}.`,
+    next_action: `Transfer the live caller to ${transferNumber}.`,
     callback_number: input.contact_number || input.phone || input.caller_phone || '',
     instructions: 'Emergency team notified. Keep the pet calm, still, and warm, and stay on the line.',
   })

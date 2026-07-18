@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { AGENTS, MEMORY_ROWS, SEED_CALLS, SEED_APPOINTMENTS, SEED_FOLLOWUPS, NOW } from './data.js'
+import { MEMORY_ROWS, SEED_CALLS, SEED_APPOINTMENTS, SEED_FOLLOWUPS, NOW } from './data.js'
 import {
-  RINGG_AGENT_LABEL,
-  RINGG_POLL_MS,
+  VAPI_AGENT_LABEL,
+  VAPI_POLL_MS,
   appointmentsFromCalls,
-  fetchRinggCalls,
+  fetchVapiCalls,
   followupsFromCalls,
   getDashboardDate,
   memoryRowsFromCalls,
-  mergeRinggCalls,
-} from './ringgLive.js'
+  mergeVapiCalls,
+} from './vapiLive.js'
 import { createCalBooking } from './calLive.js'
 import Overview from './pages/Overview.jsx'
 import Calls from './pages/Calls.jsx'
@@ -52,7 +52,7 @@ export default function App() {
   const [actionsCallId, setActionsCallId] = useState(null)
   const [toast, setToast] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [ringgSync, setRinggSync] = useState({ state: 'syncing', message: `Connecting to ${RINGG_AGENT_LABEL}` })
+  const [vapiSync, setVapiSync] = useState({ state: 'syncing', message: `Connecting to ${VAPI_AGENT_LABEL}` })
 
   // Latest calls for the poll loop to merge against (the effect runs once, so a
   // ref avoids a stale closure without re-subscribing the interval every render).
@@ -92,42 +92,37 @@ export default function App() {
 
     const sync = async ({ quiet = false } = {}) => {
       try {
-        const payload = await fetchRinggCalls()
+        const payload = await fetchVapiCalls()
         if (cancelled) return
 
         if (payload.connected) {
           const liveCalls = payload.calls || []
-          // Merge live executions onto current state so a booking/review the user
-          // just made on screen survives the next 8s poll (mergeCall keeps booked,
-          // reviewed status, and user-touched action items). Derive the dependent
-          // collections from the merged calls — not the raw payload — so locally
-          // confirmed bookings still appear on the calendar and follow-up queue.
           const base = connectedRef.current ? callsRef.current : []
           connectedRef.current = true
-          const merged = mergeRinggCalls(base, liveCalls)
+          const merged = mergeVapiCalls(base, liveCalls)
           callsRef.current = merged
           setCalls(merged)
           setAppointments(mergeAppointments(SEED_APPOINTMENTS, appointmentsFromCalls(merged)))
           setFollowups(followupsFromCalls(merged))
           setMemoryRows(memoryRowsFromCalls(merged))
           setDashboardDate(payload.dashboardDate || getDashboardDate(merged))
-          const agentName = payload.agent?.name || RINGG_AGENT_LABEL
-          setRinggSync({
+          const agentName = payload.agent?.name || VAPI_AGENT_LABEL
+          setVapiSync({
             state: 'connected',
             message: `${agentName} live · ${liveCalls.length} calls synced`,
           })
         } else {
-          setRinggSync({ state: 'demo', message: payload.message || 'Demo data · Ringg API key missing' })
+          setVapiSync({ state: 'demo', message: payload.message || 'Demo data · Vapi API key missing' })
         }
       } catch {
         if (!cancelled && !quiet) {
-          setRinggSync({ state: 'demo', message: 'Demo data · Ringg sync unavailable locally' })
+          setVapiSync({ state: 'demo', message: 'Demo data · Vapi sync unavailable locally' })
         }
       }
     }
 
     sync()
-    timer = window.setInterval(() => sync({ quiet: true }), RINGG_POLL_MS)
+    timer = window.setInterval(() => sync({ quiet: true }), VAPI_POLL_MS)
 
     return () => {
       cancelled = true
@@ -251,7 +246,7 @@ export default function App() {
   const openDashboard = () => navigate('overview', '/')
 
   const store = {
-    calls, appointments, followups, memoryRows, dashboardDate, ringgSync,
+    calls, appointments, followups, memoryRows, dashboardDate, vapiSync,
     visits, selectedVisitId,
     selectVisit: (id) => setSelectedVisitId(id),
     endVisit: (id) => setVisits((vs) => vs.map((v) => (v.id === id ? { ...v, status: 'draft' } : v))),
@@ -374,10 +369,10 @@ export default function App() {
             </div>
           </div>
           <div className="hidden sm:flex items-center gap-2 font-mono text-[11px] text-sage shrink-0">
-            <span className={`w-2 h-2 rounded-full ${ringgSync.state === 'connected' ? 'bg-pine live-dot' : 'bg-amber-400'}`} />
-            {AGENTS.length} agents live
+            <span className={`w-2 h-2 rounded-full ${vapiSync.state === 'connected' ? 'bg-pine live-dot' : 'bg-amber-400'}`} />
+            Vapi
             <span className="text-sage/50">·</span>
-            {ringgSync.state === 'connected' ? ringgSync.message : 'Demo'}
+            {vapiSync.state === 'connected' ? vapiSync.message : 'Demo'}
           </div>
           </div>
         </header>

@@ -53,8 +53,8 @@
       "destination": "/api/notify_emergency_team"
     },
     {
-      "source": "/webhooks/call-completed",
-      "destination": "/api/ringg-webhook"
+      "source": "/webhooks/vapi",
+      "destination": "/api/vapi-webhook"
     },
     {
       "source": "/revenue",

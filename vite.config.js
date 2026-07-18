@@ -17,8 +17,9 @@ export default defineConfig(({ mode }) => {
 
 function localApiRoutes() {
   const routes = {
-    '/api/ringg-calls': () => import('./api/ringg-calls.js'),
-    '/api/ringg-webhook': () => import('./api/ringg-webhook.js'),
+    '/api/vapi-calls': () => import('./api/vapi-calls.js'),
+    '/api/vapi-webhook': () => import('./api/vapi-webhook.js'),
+    '/webhooks/vapi': () => import('./api/vapi-webhook.js'),
     '/api/cal/slots': () => import('./api/cal/slots.js'),
     '/api/cal/book-appointment': () => import('./api/book_appointment.js'),
     '/api/book_appointment': () => import('./api/book_appointment.js'),
@@ -41,8 +42,6 @@ function localApiRoutes() {
     '/save_call_context': () => import('./api/save_call_context.js'),
     '/api/notify_emergency_team': () => import('./api/notify_emergency_team.js'),
     '/notify_emergency_team': () => import('./api/notify_emergency_team.js'),
-    '/api/webhooks/call-completed': () => import('./api/ringg-webhook.js'),
-    '/webhooks/call-completed': () => import('./api/ringg-webhook.js'),
   }
 
   return {

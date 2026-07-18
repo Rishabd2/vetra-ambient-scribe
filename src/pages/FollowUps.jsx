@@ -6,14 +6,43 @@ export default function FollowUps({ store }) {
   const sent = followups.flatMap((f) => f.steps).filter((s) => s.status === 'sent').length
   const scheduled = followups.flatMap((f) => f.steps).filter((s) => s.status === 'scheduled').length
 
+  // Visit-derived to-dos (generated from each SOAP Plan).
+  const visitTasks = (store.visits || []).flatMap((v) =>
+    (v.followups || []).map((f) => ({ ...f, visitId: v.id, pet: v.patient.name, owner_: v.patient.owner.name })),
+  )
+  const openTasks = visitTasks.filter((t) => !t.done).length
+
   return (
-    <div className="space-y-5 fade-up">
+    <div className="space-y-6 fade-up">
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-sage">
+        <span><span className="font-semibold text-ink tabular">{openTasks}</span> open visit tasks</span>
         <span><span className="font-semibold text-ink tabular">{sent}</span> messages sent</span>
         <span><span className="font-semibold text-ink tabular">{scheduled}</span> scheduled</span>
-        <span className="font-mono text-[11px] w-full sm:w-auto sm:ml-auto">Sequences fire automatically after every booking & handoff — no staff input.</span>
       </div>
 
+      {/* Visit-derived to-dos */}
+      <div>
+        <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-sage px-1 mb-2">From today&apos;s visits</div>
+        <Card className="divide-y divide-line">
+          {visitTasks.length === 0 && <div className="px-5 py-8 text-center text-sage text-sm">No visit follow-ups yet.</div>}
+          {visitTasks.map((t) => (
+            <label key={t.id} className="flex items-center gap-3 px-5 py-3 cursor-pointer hover:bg-cream transition-colors">
+              <input type="checkbox" checked={t.done} onChange={() => store.toggleFollowup(t.visitId, t.id)} className="accent-pine w-4 h-4" />
+              <div className="flex-1 min-w-0">
+                <div className={`text-sm ${t.done ? 'line-through text-sage' : 'text-ink'}`}>{t.label}</div>
+                <div className="text-[11px] text-sage">{t.pet} · {t.owner} · due {t.due}</div>
+              </div>
+              <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-sage shrink-0">
+                <ChannelIcon channel={t.channel} /> {t.channel}
+              </span>
+            </label>
+          ))}
+        </Card>
+      </div>
+
+      {/* Automated messaging sequences (existing) */}
+      <div>
+        <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-sage px-1 mb-2">Automated messaging sequences</div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {followups.map((f) => (
           <Card key={f.id} className="p-5">
@@ -58,9 +87,10 @@ export default function FollowUps({ store }) {
         ))}
         {followups.length === 0 && (
           <Card className="md:col-span-2 px-5 py-10 text-center text-sage text-sm">
-            No live booking, referral, or follow-up sequences have been returned from Ringg yet.
+            No automated messaging sequences yet.
           </Card>
         )}
+      </div>
       </div>
     </div>
   )

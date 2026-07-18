@@ -1,106 +1,158 @@
-# Vetra — Front Desk AI Dashboard
+# Vetra — Veterinary Ambient Scribe & Front-Desk AI
 
-Clean demo dashboard for Vetra's vet-clinic voice agents, now wired for **Ringg.ai call history, transcripts, custom variables and analysis**.
+Vetra is an **ambient AI scribe and front-desk copilot for veterinary clinics.** A
+voice agent (built on [Vapi](https://vapi.ai)) sits in on the exam-room visit, and
+Vetra turns that live conversation into finished clinical work — a SOAP note, an
+updated patient chart, follow-up tasks, and a SOAP-derived invoice — while the vet
+just talks to the pet owner.
 
-## Run
+Every artifact the AI produces lands in a **Draft state and only becomes part of the
+record once the vet reviews and approves it.** The AI drafts everything; the
+clinician stays the source of truth.
+
+> Demo persona: **Dr. Martinez, Urbana Paws Clinic.** Voice agent: **"Haley."**
+
+Live demo: **https://cv-vetra.vercel.app**
+
+---
+
+## The core flow
+
+1. **Live visit** — the exam-room voice agent joins the call; Vetra streams the
+   transcript in real time.
+2. **In-call, chart-aware Q&A** — during the visit the vet can ask the assistant
+   questions ("last vaccination date?", "is this lump new?") and get answers grounded
+   in the patient's chart.
+3. **On call-end, everything is auto-generated:**
+   - **SOAP note** (Subjective / Objective / Assessment / Plan)
+   - **Patient card** update (vitals, problems, meds, history)
+   - **Follow-up tasks** (reminders, rechecks, owner messages)
+   - **Invoice**, derived line-by-line from the SOAP plan
+4. **Draft → Reviewed gate** — none of it is final until the vet approves. Every
+   screen enforces the same review step.
+
+---
+
+## Tech stack
+
+| Layer      | Choice                                        |
+|------------|-----------------------------------------------|
+| Frontend   | React 19 + Vite 8                             |
+| Styling    | Tailwind CSS 4 (`@tailwindcss/vite`)          |
+| Voice      | Vapi (live calls, transcripts, in-call control)|
+| Bookings   | Cal.com (server-side, key never hits browser) |
+| Memory     | Supabase (`vetra_patient_memory` table)       |
+| Hosting    | Vercel (static SPA + serverless `/api` fns)   |
+
+The app runs fully on **seeded mock data** out of the box (`src/data.js`,
+`src/mock/visits.js`) so it demos with zero backend config. Live Vapi / Cal.com /
+Supabase wiring switches on only when the corresponding env vars are present.
+
+---
+
+## Run locally
 
 ```bash
 npm install
-npm run dev        # http://localhost:5180
-npm run build      # static build in dist/ — deploy anywhere (vercel --prod)
+npm run dev        # Vite dev server (auto-ports; typically http://localhost:5173)
+npm run build      # static production build → dist/
+npm run preview    # serve the production build locally
+npm run lint       # eslint
 ```
 
-## Live Ringg connection
+No environment variables are required for the mock-data demo.
 
-The deployed Vercel app reads live Ringg calls for `vetra_RinggMirror` through `/api/ringg-calls` and merges them into the Calls queue. The browser polls every 8 seconds, so active and completed calls show up without a manual refresh.
+---
 
-Set these environment variables in Vercel:
+## Project structure
 
+```
+src/
+  App.jsx              # shell, routing, state, live-poll loop
+  data.js              # seeded calls / appointments / follow-ups
+  mock/visits.js       # canonical mock visit contract (SOAP, chart, transcript)
+  vapiLive.js          # Vapi call fetch + normalization (client)
+  calLive.js           # Cal.com booking (client)
+  pages/               # Dashboard, Inbox (Calls), Calendar, Patients,
+                       # Doctor Notes, Follow-ups, Analytics, Settings,
+                       # Landing2, RevenueUplift, Invoice, CallDrawer, BookingModal
+server/                # Vapi/Cal/Supabase normalization + adapter helpers
+api/                   # Vercel serverless functions (see below)
+supabase/              # vetra_patient_memory.sql schema
+tests/                 # vapi-adapter tests
+```
+
+### Pages
+
+| Page               | What it shows |
+|--------------------|---------------|
+| **Dashboard**      | Clinic-day overview: needs-action queue, today's schedule, revenue at a glance |
+| **Inbox**          | Call/visit queue (Needs action / Unreviewed / Reviewed); open a row for the full transcript drawer |
+| **Calendar**       | Week view of appointments; create / edit / reschedule |
+| **Clinic Timeline**| Chronological view of clinic activity |
+| **Patients**       | Persistent patient memory — returning owners never repeat themselves |
+| **Doctor Notes**   | Ambient-generated SOAP notes with the Draft → Reviewed approval gate |
+| **Follow-ups**     | Auto-drafted follow-up sequences per visit |
+| **Analytics**      | Clinic metrics |
+| **Settings**       | Clinic / agent configuration |
+
+### Serverless API (`/api`, 9 functions — under Vercel Hobby's 12-fn cap)
+
+`vapi-calls`, `vapi-webhook`, `vapi-say`, `lookup_patient`, `book_appointment`,
+`cancel_appointment`, `reschedule_appointment`, `check_availability_of_slots`,
+plus `cal/` slot helpers. `vercel.json` rewrites the Vapi tool endpoints
+(`/book_appointment`, `/webhooks/vapi`, etc.) to these handlers.
+
+---
+
+## Optional live integrations
+
+Set these in Vercel (or a local `.env`, which is git-ignored) to move off mock data.
+
+**Vapi (voice):**
 ```bash
-RINGG_API_KEY=...
-RINGG_AGENT_ID=864b0c36-7b52-4f42-9aeb-77445f37b7b2
-RINGG_AGENT_NAME=vetra_RinggMirror
-RINGG_HISTORY_LOOKBACK_DAYS=14
-RINGG_WEBHOOK_SECRET=...
-EMERGENCY_TRANSFER_NUMBER=+918696816868
-NEXT_PUBLIC_SUPABASE_URL=https://ngtioksojnxlkdyzqxzw.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-SUPABASE_PATIENT_MEMORY_TABLE=vetra_patient_memory
-VITE_RINGG_AGENT_NAME=vetra_RinggMirror
-VITE_RINGG_POLL_MS=8000
+VAPI_API_KEY=...
+VAPI_ASSISTANT_ID=...
+VAPI_ASSISTANT_NAME=Haley
+VAPI_WEBHOOK_SECRET=...
+VITE_VAPI_ASSISTANT_NAME=Haley
+VITE_VAPI_POLL_MS=2000
 ```
 
-If `RINGG_API_KEY` is not set, the dashboard stays on the seeded demo data and shows a demo-mode sync message in the header.
-
-## Cal.com booking connection
-
-The dashboard books real appointment slots through server-side Cal.com routes, so the Cal API key is never exposed to the browser. The booking modal reads live availability from `/api/cal/slots`, then confirms the selected slot through `/api/book_appointment`.
-
-Set these environment variables in Vercel:
-
+**Cal.com (bookings — server-side only, key never exposed to the browser):**
 ```bash
 CAL_API_KEY=...
-CAL_EVENT_TYPE_ID=6001252
-CAL_TIMEZONE=America/New_York
+CAL_EVENT_TYPE_ID=...
+CAL_TIMEZONE=America/Chicago
 ```
 
-Optional Cal configuration:
+**Supabase (durable patient memory):**
+```bash
+SUPABASE_URL=...
+SUPABASE_SERVICE_ROLE_KEY=...
+SUPABASE_ANON_KEY=...
+SUPABASE_PATIENT_MEMORY_TABLE=vetra_patient_memory
+```
+Run `supabase/vetra_patient_memory.sql` once in the Supabase SQL editor before
+relying on persistent memory. Without it, the app answers from seeded records.
+
+If a given integration's keys are absent, that surface falls back to seeded demo
+data automatically — the dashboard always renders.
+
+---
+
+## Deploy
+
+Deployed on Vercel as a static SPA plus serverless functions.
 
 ```bash
-CAL_FALLBACK_ATTENDEE_EMAIL=frontdesk@example.com
-CAL_EVENT_TYPES_API_VERSION=2024-06-14
-CAL_SLOTS_API_VERSION=2024-09-04
-CAL_BOOKINGS_API_VERSION=2026-02-25
+vercel --prod
 ```
 
-For Ringg on-call booking tools, point `book_appiontment` / `book_appointment` at:
+---
 
-```text
-https://YOUR_DEPLOYMENT_URL/book_appointment
-```
+## Design principle
 
-That route rewrites to the same Cal booking handler the dashboard uses.
-
-Emergency handoff uses the custom `notify_emergency_team` endpoint first, then Ringg's built-in `call_transfer` tool. Configure the built-in transfer destination as `Vetra Emergency Routing` with target `+918696816868`. Webcall tests can verify triage and notification, but they do not provide a real phone leg to bridge; a real emergency transfer requires an inbound-enabled Ringg number attached to the assistant.
-
-## Supabase memory
-
-Patient memory, due-care context, and booking references are written to Supabase table `vetra_patient_memory`. Run `supabase/vetra_patient_memory.sql` once in the Supabase SQL editor before relying on durable memory. Without that table, the app can still answer from seeded sample records, but production call memory will not persist.
-
-For webhooks, configure Ringg event subscriptions to call:
-
-```text
-https://YOUR_DEPLOYMENT_URL/api/ringg-webhook
-```
-
-Start with `all_processing_completed`; add `call_started` or `call_completed` if the UI needs earlier progress events.
-
-## Revenue uplift page
-
-The prospect-facing calculator lives at `/revenue`. It models missed calls, AI completion rate, booking rate, and average case value to estimate monthly and annual revenue recovered by Vetra.
-
-## What's inside
-
-| Page | What it shows |
-|---|---|
-| **Overview** | Revenue captured / at-risk / missed (24h), needs-action queue, today's AI-booked calendar, last night's emergency handoff timeline |
-| **Calls** | Callback queue (Needs action / Unreviewed / Reviewed), urgency-coded; click a row → full transcript drawer with AI summary, next actions, and **Book appointment** |
-| **Calendar** | Week view, AI-booked vs staff-booked, bookings from transcripts land here live |
-| **Follow-ups** | Automated SMS / WhatsApp / Email sequences per booking & handoff |
-| **Patients** | The shared memory layer from Ringg custom variables and seeded demo rows — returning callers never repeat themselves |
-| **Agents** | Ringg assistants, their tools, the shared-memory link, and the 7-step call flow (Nº 01–07) |
-
-## The core flow demoed
-
-1. Pet owner calls the small clinic → Priya (triage) collects symptoms, scores urgency
-2. Beyond capacity → caller informed, call + context transferred (`owner_name`, `pet_name`, `reported_symptom`)
-3. Priya (emergency) at Northside ER opens with the transferred context — nothing repeated
-4. Availability confirmed, treatment scheduled
-5. Automated follow-ups: confirmation, directions, pre-arrival instructions, reminders, post-treatment check-ins
-6. Every call upserts the memory sheet keyed by phone — follow-up calls get full context
-7. From any transcript: **Book appointment** → calendar slot grid → confirms, updates revenue metrics, queues the follow-up sequence
-
-Real call executions embedded: `8c1bc359` (John Wick — urgent vomiting), `6a8240e6` → `f90320fc` (Buddy — emergency handoff pair), `b04164f2` (Buddy — Jul 3 booking).
-
-Demo clock is pinned to **June 12, 2026** to match the live call data (`src/data.js`).
+**AI drafts everything; the vet approves everything.** Every generated artifact —
+SOAP note, patient-card update, follow-up, invoice — starts as a Draft and requires
+an explicit clinician review before it counts. That gate is the product.

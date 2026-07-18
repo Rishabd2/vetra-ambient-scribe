@@ -25,6 +25,35 @@ export default function Overview({ store }) {
 
   return (
     <div className="space-y-6 fade-up">
+      {/* Workflow tiles — the ambient-visit pipeline at a glance */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <WorkflowTile
+          label="Visits today"
+          value={(store.visits || []).length}
+          sub="live + documented"
+          onClick={() => store.setView('notes')}
+        />
+        <WorkflowTile
+          label="Drafts awaiting review"
+          value={(store.visits || []).filter((v) => v.status === 'draft').length}
+          sub="SOAP notes to approve"
+          tone="text-amber-700"
+          onClick={() => store.setView('notes')}
+        />
+        <WorkflowTile
+          label="Follow-ups due"
+          value={(store.visits || []).flatMap((v) => v.followups || []).filter((f) => !f.done).length}
+          sub="open visit tasks"
+          onClick={() => store.setView('followups')}
+        />
+        <WorkflowTile
+          label="Invoices pending"
+          value={(store.visits || []).filter((v) => v.invoice && v.invoice.status !== 'finalized').length}
+          sub="draft, not finalized"
+          onClick={() => store.setView('patients')}
+        />
+      </div>
+
       {/* KPI tiles — the numbers that matter, one per tile */}
       <div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -174,6 +203,18 @@ function Kpi({ label, value, sub, dot, tone = 'text-ink' }) {
       <div className={`mt-2 text-2xl font-semibold tabular tracking-tight ${tone}`}>{value}</div>
       <div className="text-[11px] text-sage mt-0.5 truncate">{sub}</div>
     </Card>
+  )
+}
+
+function WorkflowTile({ label, value, sub, tone = 'text-ink', onClick }) {
+  return (
+    <button onClick={onClick} className="text-left">
+      <Card className="p-4 hover:border-pine/30 transition-colors h-full">
+        <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-sage">{label}</div>
+        <div className={`mt-2 text-2xl font-semibold tabular tracking-tight ${tone}`}>{value}</div>
+        <div className="text-[11px] text-sage mt-0.5 truncate">{sub}</div>
+      </Card>
+    </button>
   )
 }
 

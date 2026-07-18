@@ -12,6 +12,7 @@ Dev server: `npm run dev` → http://localhost:5173/ (Vite auto-port; plan said 
 - [x] A8 — Patient cards: src/pages/Patients.jsx reworked to patient tiles (derived from visits, NEW tag), detail view with problem/med/allergy chips, 4 tabs (overview/notes/invoices/follow-ups), visit history w/ Open note→. Legacy call-memory table retained below. Verified Bella/Max/Duke tiles + Max detail in browser.
 - [x] A9 — Invoice: src/pages/Invoice.jsx, SOAP-derived line items with "from {section}" source tags, editable qty/price while draft, subtotal/tax/total, Approve & Finalize → Finalized badge persists. Verified Max invoice ($174.96) + finalize.
 - [x] A10 — Follow-ups: FollowUps.jsx prepends "From today's visits" section (7 tasks from Bella/Max/Duke SOAP plans, checkbox toggle w/ strike-through via toggleFollowup), keeps existing "Automated messaging sequences". Verified toggle in browser, 0 JS errors.
+- [x] A11 — Dashboard tiles: Overview.jsx adds a workflow-tile row (Visits today 3 / Drafts awaiting review 1 / Follow-ups due 7 / Invoices pending 2), each click-throughs via store.setView. Verified counts + navigation, 0 JS errors.
 
 ## Phase B — Backend
 (pending Phase A)

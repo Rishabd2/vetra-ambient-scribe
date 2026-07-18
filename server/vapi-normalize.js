@@ -9,7 +9,7 @@ const URGENT = /(emergency|seizure|collapse|bleeding|breathing|not breathing|tox
 // Map a raw Vapi call into the shape the UI already understands.
 export function normalizeVapiCall(call, assistant = {}) {
   const id = String(call.id || '')
-  const shortId = id.slice(0, 8)
+  const shortId = id // full id — 8-char prefixes collide across Vapi calls
   const started = call.startedAt || call.createdAt || null
   const ended = call.endedAt || null
   const live = call.status === 'in-progress' || call.status === 'ringing' || call.status === 'forwarding'

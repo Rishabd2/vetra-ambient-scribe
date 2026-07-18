@@ -126,7 +126,7 @@ function liveRowToCall(r, agent) {
   const transcript = Array.isArray(r.transcript) ? r.transcript : []
   const reason = transcript.find(([w]) => w === 'caller')?.[1]?.slice(0, 90) || 'Live call in progress…'
   return {
-    id: String(r.call_id).slice(0, 8),
+    id: String(r.call_id),
     vapiId: r.call_id,
     executionId: r.call_id,
     source: 'vapi',

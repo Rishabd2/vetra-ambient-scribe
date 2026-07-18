@@ -63,6 +63,8 @@ export default function App() {
   // ref avoids a stale closure without re-subscribing the interval every render).
   const callsRef = useRef(calls)
   useEffect(() => { callsRef.current = calls }, [calls])
+  // Call IDs the user deleted — filtered out of every sync so they don't return.
+  const dismissedRef = useRef(new Set())
   // First successful Ringg connect replaces the seed data wholesale; later polls
   // merge so user edits to live calls survive. Without this, seed/other-agent
   // calls (which never match a live executionId) would linger after connecting.
@@ -105,9 +107,10 @@ export default function App() {
           // Seed history is the permanent baseline — live Vapi calls merge on
           // top so the dashboard stays lived-in instead of collapsing to the
           // few real calls. Derived collections keep their seed rows too.
-          const base = connectedRef.current ? callsRef.current : SEED_CALLS
+          const dismissed = dismissedRef.current
+          const base = (connectedRef.current ? callsRef.current : SEED_CALLS).filter((c) => !dismissed.has(c.id))
           connectedRef.current = true
-          const merged = mergeVapiCalls(base, liveCalls)
+          const merged = mergeVapiCalls(base, liveCalls).filter((c) => !dismissed.has(c.id))
           callsRef.current = merged
           setCalls(merged)
           setAppointments(mergeAppointments(SEED_APPOINTMENTS, appointmentsFromCalls(merged)))
@@ -289,6 +292,12 @@ export default function App() {
     calls, appointments, followups, memoryRows, dashboardDate, vapiSync,
     selectedCallId,
     selectCall: (id) => setSelectedCallId(id),
+    deleteCall: (id) => {
+      dismissedRef.current.add(id)
+      updateCalls((cs) => cs.filter((c) => c.id !== id))
+      setSelectedCallId((cur) => (cur === id ? null : cur))
+      showToast('Call deleted')
+    },
     injectLiveTurn: (callId, turns) =>
       updateCalls((cs) => cs.map((c) => (c.id === callId ? { ...c, transcript: [...(c.transcript || []), ...turns] } : c))),
     visits, selectedVisitId,

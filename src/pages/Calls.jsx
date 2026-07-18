@@ -155,6 +155,15 @@ function CallDetail({ call, store }) {
         <div className="flex items-center gap-2 shrink-0">
           {!call.booked && <button onClick={() => store.startBooking(call.id)} className="rounded-full bg-pine text-white px-4 py-2 text-sm font-medium hover:bg-pine-dark">▦ Book</button>}
           {call.status !== 'reviewed' && <button onClick={() => store.markReviewed(call.id)} className="rounded-full border border-line px-4 py-2 text-sm text-ink hover:border-pine/40">Mark reviewed</button>}
+          {!isLive && (
+            <button
+              onClick={() => { if (confirm(`Delete this call from ${call.caller.name}? This can't be undone.`)) store.deleteCall(call.id) }}
+              className="rounded-full border border-red-200 text-red-600 px-3 py-2 text-sm hover:bg-red-50"
+              title="Delete call"
+            >
+              Delete
+            </button>
+          )}
         </div>
       </div>
 

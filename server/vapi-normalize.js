@@ -54,11 +54,11 @@ export function extractDetails(transcript, summary = '') {
   const out = {}
 
   // Owner name: prefer the summary's "X called" (most reliable), else the
-  // caller stating it. Reject filler like "My Name" / "Name Is".
+  // caller stating it. Reject filler like "My Name" / "Calling To".
   const ownerFromSummary = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+called\b/.exec(summary)
   const ownerFromCaller = /\b(?:my name is|this is|i am|i'm|name's|it's)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i.exec(callerText)
   const ownerRaw = (ownerFromSummary && ownerFromSummary[1]) || (ownerFromCaller && ownerFromCaller[1])
-  if (ownerRaw && !/^(my|name|the|a)\b/i.test(ownerRaw)) out.owner = titleCase(ownerRaw)
+  if (ownerRaw && isNameLike(ownerRaw)) out.owner = titleCase(ownerRaw)
 
   // Species
   const species = /\b(dog|cat|puppy|kitten|rabbit|bird|canary|reptile|bearded dragon|ferret|hamster|guinea pig)\b/i.exec(hay)
@@ -68,7 +68,7 @@ export function extractDetails(transcript, summary = '') {
   const pet =
     /(?:dog|cat|puppy|kitten|pet|rabbit|bird)(?:'s)?(?:\s+name)?(?:\s+is|,|\s+called|\s+named)?\s+([A-Z][a-z]+)/.exec(hay)
     || /\bfor\s+(?:my\s+\w+\s+)?([A-Z][a-z]+)\b/.exec(summary)
-  if (pet && !isCommonWord(pet[1])) out.pet = titleCase(pet[1])
+  if (pet && isNameLike(pet[1])) out.pet = titleCase(pet[1])
 
   // Breed
   const breed = /\b(golden retriever|labrador|german shepherd|bulldog|poodle|beagle|dachshund|corgi|husky|maine coon|persian|siamese|bengal|ragdoll|portuguese water dog|holland lop)\b/i.exec(hay)
@@ -100,8 +100,16 @@ function normalizeSpecies(s) {
   if (l === 'bearded dragon') return 'Reptile'
   return titleCase(l)
 }
-function isCommonWord(w) {
-  return /^(the|a|an|my|his|her|your|our|is|was|old|new|patient|appointment|visit|him|her|it)$/i.test(w)
+function isNameLike(w) {
+  const word = String(w).trim().split(/\s+/)[0].toLowerCase()
+  const STOP = new Set([
+    'the', 'a', 'an', 'my', 'his', 'her', 'your', 'our', 'is', 'was', 'old', 'new',
+    'patient', 'appointment', 'visit', 'him', 'it', 'calling', 'call', 'to', 'of', 'for',
+    'about', 'with', 'and', 'but', 'so', 'she', 'he', 'they', 'here', 'there', 'today',
+    'yes', 'no', 'okay', 'hi', 'hello', 'thanks', 'thank', 'please', 'sorry', 'name',
+    'owner', 'caller', 'pet', 'dog', 'cat', 'clinic', 'doctor', 'vet',
+  ])
+  return word.length >= 2 && !STOP.has(word)
 }
 
 // Vapi returns a plain-text `transcript` and/or a `messages[]` array (both also

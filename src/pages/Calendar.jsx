@@ -29,6 +29,7 @@ export default function CalendarPage({ store }) {
 
   const move = (dir) => setWeekOffset((o) => o + dir)
   const [selected, setSelected] = useState(null)
+  const [formAppt, setFormAppt] = useState(null) // null=closed, {}=new, {...}=edit
   const label = `${days[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${days[5].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
   const agentCount = appointments.filter((a) => a.source === 'agent').length
 
@@ -41,9 +42,17 @@ export default function CalendarPage({ store }) {
           <button onClick={() => move(1)} className="w-8 h-8 rounded-full border border-line bg-white hover:border-pine/40 text-sage">→</button>
           <button onClick={() => setWeekOffset(0)} className="text-[12px] text-pine hover:underline ml-1">Today</button>
         </div>
-        <div className="font-mono text-[11px] text-sage">
-          <span className="inline-block w-2.5 h-2.5 rounded-sm bg-pine mr-1.5 align-middle" />AI booked ({agentCount})
-          <span className="inline-block w-2.5 h-2.5 rounded-sm bg-slate-300 ml-4 mr-1.5 align-middle" />Staff booked
+        <div className="flex items-center gap-4">
+          <div className="font-mono text-[11px] text-sage">
+            <span className="inline-block w-2.5 h-2.5 rounded-sm bg-pine mr-1.5 align-middle" />AI booked ({agentCount})
+            <span className="inline-block w-2.5 h-2.5 rounded-sm bg-slate-300 ml-4 mr-1.5 align-middle" />Staff booked
+          </div>
+          <button
+            onClick={() => setFormAppt({ date: todayISO })}
+            className="rounded-full bg-pine text-white px-4 py-1.5 text-sm font-medium hover:bg-pine-dark"
+          >
+            + Add appointment
+          </button>
         </div>
       </div>
 

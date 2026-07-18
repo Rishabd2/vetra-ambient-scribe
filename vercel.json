@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/webhooks/vapi",
-      "destination": "/api/ringg-webhook"
-    },
-    {
       "source": "/book_appointment",
       "destination": "/api/book_appointment"
     },

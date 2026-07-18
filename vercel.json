@@ -39,6 +39,10 @@
     {
       "source": "/revenue",
       "destination": "/"
+    },
+    {
+      "source": "/(inbox|patients|notes|calendar|timeline|follow-ups|analytics|settings)/:path*",
+      "destination": "/"
     }
   ]
 }

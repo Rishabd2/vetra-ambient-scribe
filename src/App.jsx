@@ -18,7 +18,6 @@ import Calls from './pages/Calls.jsx'
 import CalendarPage from './pages/Calendar.jsx'
 import FollowUps from './pages/FollowUps.jsx'
 import Patients from './pages/Patients.jsx'
-import { ComingSoon } from './ui.jsx'
 import DoctorNotes from './pages/DoctorNotes.jsx'
 import { MOCK_VISITS, answerFor } from './mock/visits.js'
 import CallDrawer from './pages/CallDrawer.jsx'
@@ -380,7 +379,7 @@ export default function App() {
           {NAV.map((n) => (
             <button
               key={n.id}
-              onClick={() => { setView(n.id); setSidebarOpen(false) }}
+              onClick={() => { navigate(n.id, viewToPath(n.id)); setSidebarOpen(false) }}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors ${
                 view === n.id ? 'bg-pine-light text-pine font-medium' : 'text-sage hover:text-ink hover:bg-cream'
               }`}
@@ -438,11 +437,11 @@ export default function App() {
           {view === 'overview' && <Overview store={store} />}
           {view === 'calls' && <Calls store={store} />}
           {view === 'calendar' && <CalendarPage store={store} />}
-          {view === 'timeline' && <ComingSoon label="Clinic Timeline" />}
+          {view === 'timeline' && <Timeline store={store} />}
           {view === 'notes' && <DoctorNotes store={store} />}
           {view === 'followups' && <FollowUps store={store} />}
           {view === 'patients' && <Patients store={store} />}
-          {view === 'analytics' && <ComingSoon label="Analytics" />}
+          {view === 'analytics' && <Analytics store={store} />}
           {view === 'settings' && <Settings store={store} />}
         </div>
       </main>
@@ -509,16 +508,37 @@ function formatDashboardDate(date) {
   })
 }
 
+// URL-backed navigation: each nav view maps to a path so refresh and deep
+// links work. Deep-link IDs (/inbox/:id, /patients/:id, /notes/:id) are parsed
+// by getInitialView / the selection is applied via effect below.
+const VIEW_PATHS = {
+  overview: '/',
+  calls: '/inbox',
+  calendar: '/calendar',
+  timeline: '/timeline',
+  notes: '/notes',
+  followups: '/follow-ups',
+  patients: '/patients',
+  analytics: '/analytics',
+  settings: '/settings',
+}
+const PATH_VIEWS = Object.fromEntries(Object.entries(VIEW_PATHS).map(([v, p]) => [p, v]))
+function viewToPath(view) { return VIEW_PATHS[view] || '/' }
+
 function getInitialView() {
   if (typeof window === 'undefined') return 'overview'
   const params = new URLSearchParams(window.location.search)
-  if (window.location.pathname === '/revenue' || window.location.hash === '#revenue' || params.get('page') === 'revenue') {
+  const path = window.location.pathname
+  if (path === '/revenue' || window.location.hash === '#revenue' || params.get('page') === 'revenue') {
     return 'revenue'
   }
   // Marketing landing is still reachable at ?page=landing; default is the dashboard.
   if (params.get('page') === 'landing' || window.location.hash === '#landing') {
     return 'landing'
   }
+  // Match the first path segment (so /inbox/:id resolves to the inbox view).
+  const seg = '/' + (path.split('/')[1] || '')
+  if (PATH_VIEWS[seg]) return PATH_VIEWS[seg]
   return 'overview'
 }
 

@@ -20,9 +20,18 @@ export default function Patients({ store }) {
   const [query, setQuery] = useState('')
 
   // Real patients from completed calls (fromCall visits) merge ahead of the
-  // mock roster so new callers show up as patient cards.
+  // mock roster so new callers show up as patient cards. Dedupe by patient id
+  // (unnamed callers collapse to one 'unknown' card rather than many dupes).
   const realVisits = (store?.visits || []).filter((v) => v.fromCall)
-  const realPatients = realVisits.map((v) => ({
+  const realSeen = new Set()
+  const realPatients = realVisits
+    .filter((v) => {
+      const id = v.patient.id
+      if (realSeen.has(id)) return false
+      realSeen.add(id)
+      return true
+    })
+    .map((v) => ({
     id: v.patient.id,
     name: v.patient.name,
     species: v.patient.species || '—',

@@ -264,7 +264,8 @@ export default function App() {
     visits, selectedVisitId,
     selectVisit: (id) => setSelectedVisitId(id),
     endVisit: (id) => setVisits((vs) => vs.map((v) => (v.id === id ? { ...v, status: 'draft' } : v))),
-    approveNote: (id) => setVisits((vs) => vs.map((v) => (v.id === id ? { ...v, status: 'reviewed' } : v))),
+    approveNote: (id) =>
+      setVisits((vs) => vs.map((v) => (v.id === id ? { ...v, status: 'reviewed', reviewedBy: 'Dr. Martinez', reviewedAt: new Date().toISOString() } : v))),
     askQuestion: (id, q) =>
       setVisits((vs) => vs.map((v) => (v.id === id ? { ...v, qa: [...(v.qa || []), { q, a: null }] } : v))),
     resolveAnswer: (id) =>

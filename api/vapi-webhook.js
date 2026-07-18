@@ -1,4 +1,5 @@
 import { handleVapiToolCalls } from '../server/vapi-adapter.js'
+import { upsertLiveCall, endLiveCall } from '../server/live-calls.js'
 
 // Single Vapi server endpoint (configured on the assistant + tools as
 // /webhooks/vapi). Handles tool-call dispatch and acknowledges other events.
@@ -38,12 +39,73 @@ export default async function handler(req, res) {
     return
   }
 
-  console.info('Vapi webhook', {
-    type,
-    callId: message.call?.id || null,
-    status: message.status || null,
-  })
+  // Live transcript pipeline: persist progressive state so the dashboard can
+  // read it near-real-time (webhook latency, not REST poll lag).
+  const call = message.call || {}
+  const callId = call.id
+  try {
+    if (callId && (type === 'conversation-update' || type === 'transcript' || type === 'status-update')) {
+      const status = message.status || call.status
+      if (type === 'status-update' && (status === 'ended' || message.endedReason)) {
+        await endLiveCall(callId)
+      } else {
+        const turns = turnsFromMessage(message)
+        const d = extractLive(turns)
+        await upsertLiveCall({
+          call_id: callId,
+          status: 'in-progress',
+          caller_name: d.owner || '',
+          caller_phone: call.customer?.number || '',
+          pet_name: d.pet || '',
+          transcript: turns,
+          summary: message.summary || '',
+          started_at: call.startedAt || call.createdAt || new Date().toISOString(),
+        })
+      }
+    }
+    if (callId && (type === 'end-of-call-report' || type === 'hang')) {
+      await endLiveCall(callId)
+    }
+  } catch (err) {
+    console.error('live-call persist failed', err?.message)
+  }
+
   res.status(200).json({ received: true, type })
+}
+
+// Build [role,text] turns from whatever transcript shape the event carries.
+function turnsFromMessage(message) {
+  const msgs = Array.isArray(message.artifact?.messages)
+    ? message.artifact.messages
+    : Array.isArray(message.messages)
+      ? message.messages
+      : Array.isArray(message.conversation)
+        ? message.conversation
+        : []
+  const turns = msgs
+    .filter((m) => ['user', 'bot', 'assistant'].includes(m.role))
+    .map((m) => [m.role === 'user' ? 'caller' : 'agent', String(m.message || m.content || '').trim()])
+    .filter(([, t]) => t)
+  if (turns.length) return turns
+  // Single-line transcript event: {role, transcript}
+  if (message.transcript && message.role) {
+    return [[message.role === 'user' ? 'caller' : 'agent', String(message.transcript).trim()]]
+  }
+  return []
+}
+
+function extractLive(turns) {
+  const callerText = turns.filter(([w]) => w === 'caller').map(([, t]) => t).join(' ')
+  const out = {}
+  const owner = /\b(?:my name is|this is|i am|i'm|name's)\s+([A-Z][a-z]+)(?:\s+([A-Z][a-z]+))?/i.exec(callerText)
+  if (owner) {
+    const first = owner[1]
+    const last = owner[2] && !/^(and|is|my|the|but|so|he|she|here|calling)$/i.test(owner[2]) ? ` ${owner[2]}` : ''
+    if (!/^(my|name)$/i.test(first)) out.owner = `${first}${last}`
+  }
+  const pet = /\b(?:dog|cat|puppy|kitten|pet)(?:'s)?(?:\s+name)?(?:\s+is|,|\s+called|\s+named)?\s+([A-Z][a-z]+)/.exec(callerText)
+  if (pet) out.pet = pet[1]
+  return out
 }
 
 function parseJson(value) {

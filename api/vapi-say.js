@@ -30,14 +30,6 @@ export default async function handler(req, res) {
     return
   }
 
-  // Demo fallback: the seeded 'live-demo' call isn't a real Vapi call, so
-  // acknowledge without hitting the control channel (keeps the stage demo
-  // working with no active phone call).
-  if (callId === 'live-demo') {
-    res.status(200).json({ ok: true, mode, injected: prompt, demo: true })
-    return
-  }
-
   try {
     // Resolve the live control URL for this call.
     const call = await vapiFetch(`/call/${callId}`, { apiKey })

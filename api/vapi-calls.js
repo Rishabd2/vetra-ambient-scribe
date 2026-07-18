@@ -7,6 +7,7 @@ import {
   memoryRowsFromCalls,
   normalizeVapiCall,
 } from '../server/vapi-normalize.js'
+import { listLiveCalls } from '../server/live-calls.js'
 
 const VAPI_BASE_URL = process.env.VAPI_API_BASE || 'https://api.vapi.ai'
 
@@ -56,16 +57,24 @@ export default async function handler(req, res) {
     const detailById = new Map(details.filter(Boolean).map((d) => [d.id, d]))
     const calls = list.map((item) => normalizeVapiCall(detailById.get(item.id) || item, agent))
 
+    // Live calls from Supabase (written by the webhook in near-real-time).
+    // Merge/override so an in-progress call shows instantly with fresh turns,
+    // even before it appears in the REST list.
+    const live = await listLiveCalls().catch(() => [])
+    const liveNorm = live.map((r) => liveRowToCall(r, agent))
+    const liveIdSet = new Set(liveNorm.map((c) => c.vapiId))
+    const merged = [...liveNorm, ...calls.filter((c) => !liveIdSet.has(c.vapiId))]
+
     res.setHeader('Cache-Control', 'no-store, max-age=0')
     res.status(200).json({
       connected: true,
       agent,
       syncedAt: new Date().toISOString(),
-      dashboardDate: inferDashboardDate(calls),
-      calls,
-      appointments: appointmentsFromCalls(calls),
-      followups: followupsFromCalls(calls),
-      memoryRows: memoryRowsFromCalls(calls),
+      dashboardDate: inferDashboardDate(merged),
+      calls: merged,
+      appointments: appointmentsFromCalls(merged),
+      followups: followupsFromCalls(merged),
+      memoryRows: memoryRowsFromCalls(merged),
     })
   } catch (error) {
     res.status(500).json({
@@ -106,4 +115,33 @@ function clampNumber(value, min, max, fallback) {
   const n = Number(value)
   if (!Number.isFinite(n)) return fallback
   return Math.min(max, Math.max(min, n))
+}
+
+// A Supabase live-call row → the dashboard call shape (marked live).
+function liveRowToCall(r, agent) {
+  const transcript = Array.isArray(r.transcript) ? r.transcript : []
+  const reason = transcript.find(([w]) => w === 'caller')?.[1]?.slice(0, 90) || 'Live call in progress…'
+  return {
+    id: String(r.call_id).slice(0, 8),
+    vapiId: r.call_id,
+    executionId: r.call_id,
+    source: 'vapi',
+    live: true,
+    callState: 'in-progress',
+    status: 'needs_action',
+    urgency: 'routine',
+    coverage: 'at_risk',
+    caller: { name: r.caller_name || 'Live caller', phone: r.caller_phone || 'Web call' },
+    pet: { name: r.pet_name || 'Pet', species: '', breed: '', age: '' },
+    reason,
+    summary: r.summary || 'Live call in progress…',
+    receivedAt: r.started_at || r.updated_at || new Date().toISOString(),
+    updatedAt: r.updated_at || new Date().toISOString(),
+    duration: 0,
+    estValue: 0,
+    recordingUrl: null,
+    agentName: agent.name,
+    transcript,
+    nextActions: [],
+  }
 }

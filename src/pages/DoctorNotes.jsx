@@ -88,7 +88,9 @@ function NoteBadge({ status }) {
 
 function VisitPanel({ visit, store }) {
   const isLive = visit.status === 'live'
-  const [tab, setTab] = useState(isLive ? 'transcript' : 'notes')
+  // Traditional staged SOAP workflow. Live calls default to the transcript;
+  // completed visits default to the Summary stage.
+  const [stage, setStage] = useState(isLive ? 'transcript' : 'summary')
   const [generating, setGenerating] = useState(false)
 
   // Live transcript streaming: reveal one line every 1.5s. Component is keyed
@@ -120,7 +122,7 @@ function VisitPanel({ visit, store }) {
     setTimeout(() => {
       store.endVisit(visit.id)
       setGenerating(false)
-      setTab('notes')
+      setStage('summary')
     }, 1200)
   }
 
@@ -164,22 +166,44 @@ function VisitPanel({ visit, store }) {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="px-5 pt-4">
-        <div className="inline-flex rounded-lg border border-line overflow-hidden text-sm">
-          <button
-            onClick={() => !isLive && setTab('notes')}
-            disabled={isLive}
-            className={`px-4 py-1.5 ${tab === 'notes' ? 'bg-pine-light text-pine font-medium' : 'text-sage'} ${isLive ? 'opacity-40 cursor-not-allowed' : ''}`}
-          >
-            Clinical Notes
-          </button>
-          <button
-            onClick={() => setTab('transcript')}
-            className={`px-4 py-1.5 border-l border-line ${tab === 'transcript' ? 'bg-pine-light text-pine font-medium' : 'text-sage'}`}
-          >
-            Raw Transcript
-          </button>
+      {/* Approval banner (completed visits) */}
+      {!isLive && (
+        <div className={`px-5 py-2.5 flex items-center gap-2 text-[12px] border-b border-line ${
+          visit.status === 'reviewed' ? 'bg-pine-light/50 text-pine' : 'bg-amber-50 text-amber-800'
+        }`}>
+          {visit.status === 'reviewed' ? (
+            <>
+              <CheckIcon /> Approved by {visit.reviewedBy || 'Dr. Martinez'} · {fmtStamp(visit.reviewedAt)}
+            </>
+          ) : (
+            <>
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              AI draft — every section below needs vet review before this record is finalized.
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Stage navigation */}
+      <div className="px-5 pt-4 border-b border-line">
+        <div className="flex gap-1 overflow-x-auto pb-px -mb-px">
+          {STAGES.map((s) => {
+            const disabled = isLive && s.id !== 'transcript'
+            return (
+              <button
+                key={s.id}
+                onClick={() => !disabled && setStage(s.id)}
+                disabled={disabled}
+                className={`px-3.5 py-2 text-[13px] whitespace-nowrap border-b-2 transition-colors ${
+                  stage === s.id
+                    ? 'border-pine text-pine font-medium'
+                    : 'border-transparent text-sage hover:text-ink'
+                } ${disabled ? 'opacity-30 cursor-not-allowed' : ''}`}
+              >
+                {s.label}
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -187,9 +211,7 @@ function VisitPanel({ visit, store }) {
       <div className="p-5">
         {generating ? (
           <GeneratingShimmer />
-        ) : tab === 'notes' ? (
-          <SoapView soap={visit.soap} />
-        ) : (
+        ) : stage === 'transcript' ? (
           <TranscriptView
             transcript={visit.transcript}
             revealed={revealed}
@@ -201,6 +223,8 @@ function VisitPanel({ visit, store }) {
               setTimeout(() => store.resolveAnswer(visit.id), 900)
             }}
           />
+        ) : (
+          <StageView stage={stage} visit={visit} />
         )}
       </div>
     </Card>
@@ -272,21 +296,151 @@ function TranscriptView({ transcript, revealed, scrollRef, qa, isLive, onAsk }) 
   )
 }
 
-function SoapView({ soap }) {
-  if (!soap) return <div className="text-sage text-sm py-8 text-center">No note generated yet.</div>
-  return (
-    <div className="space-y-6">
-      <div className="text-[11px] font-mono text-sage/70 flex items-center gap-1.5">
-        <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2v4M12 18v4M2 12h4M18 12h4" strokeLinecap="round" /></svg>
-        Generated from transcript
-      </div>
-      <Section title="Clinical Summary"><p className="text-sm leading-relaxed text-ink">{soap.summary}</p></Section>
-      <Section title="Subjective"><Bullets items={soap.subjective} /></Section>
-      <Section title="Objective"><Bullets items={soap.objective} /></Section>
-      <Section title="Assessment"><Bullets items={soap.assessment} /></Section>
-      <Section title="Plan"><Bullets items={soap.plan} ordered /></Section>
+const STAGES = [
+  { id: 'summary', label: 'Summary' },
+  { id: 'subjective', label: 'Subjective' },
+  { id: 'objective', label: 'Objective' },
+  { id: 'assessment', label: 'Assessment' },
+  { id: 'plan', label: 'Plan' },
+  { id: 'discharge', label: 'Discharge & Follow-ups' },
+  { id: 'charges', label: 'Charges' },
+  { id: 'transcript', label: 'Transcript' },
+]
+
+function StageView({ stage, visit }) {
+  const soap = visit.soap
+  if (!soap && stage !== 'charges' && stage !== 'discharge') {
+    return <div className="text-sage text-sm py-8 text-center">No note generated yet.</div>
+  }
+
+  const genTag = (
+    <div className="text-[11px] font-mono text-sage/70 flex items-center gap-1.5 mb-4">
+      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2v4M12 18v4M2 12h4M18 12h4" strokeLinecap="round" /></svg>
+      AI-generated from transcript · draft
     </div>
   )
+
+  if (stage === 'summary') {
+    return (
+      <div>
+        {genTag}
+        <p className="text-sm leading-relaxed text-ink">{soap.summary}</p>
+      </div>
+    )
+  }
+  if (stage === 'subjective') return <StageBody tag={genTag}><Bullets items={soap.subjective} /></StageBody>
+  if (stage === 'objective') return <StageBody tag={genTag}><Bullets items={soap.objective} /></StageBody>
+  if (stage === 'assessment') return <StageBody tag={genTag}><Bullets items={soap.assessment} /></StageBody>
+  if (stage === 'plan') return <StageBody tag={genTag}><Bullets items={soap.plan} ordered /></StageBody>
+  if (stage === 'discharge') return <DischargeView visit={visit} tag={genTag} />
+  if (stage === 'charges') return <ChargesView visit={visit} tag={genTag} />
+  return null
+}
+
+function StageBody({ tag, children }) {
+  return <div>{tag}{children}</div>
+}
+
+function DischargeView({ visit, tag }) {
+  const followups = visit.followups || []
+  const soap = visit.soap
+  return (
+    <div>
+      {tag}
+      <Section title="Discharge instructions">
+        {soap?.plan?.length ? <Bullets items={soap.plan} /> : <Empty>No plan items to summarize.</Empty>}
+      </Section>
+      <div className="mt-6">
+        <Section title="Follow-up tasks">
+          {followups.length ? (
+            <div className="space-y-2">
+              {followups.map((f) => (
+                <div key={f.id} className="flex items-center justify-between gap-3 rounded-xl border border-line bg-white px-3.5 py-2.5">
+                  <div className="min-w-0">
+                    <div className="text-sm text-ink truncate">{f.label}</div>
+                    <div className="text-[11.5px] text-sage">{f.owner} · due {f.due} · {f.channel}</div>
+                  </div>
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 shrink-0">Draft</span>
+                </div>
+              ))}
+            </div>
+          ) : <Empty>No follow-ups generated.</Empty>}
+        </Section>
+      </div>
+    </div>
+  )
+}
+
+function ChargesView({ visit, tag }) {
+  const inv = visit.invoice
+  if (!inv) return <Empty>No charges derived yet.</Empty>
+  const subtotal = inv.lines.reduce((s, l) => s + l.qty * l.price, 0)
+  const tax = subtotal * (inv.taxRate || 0)
+  const total = subtotal + tax
+  return (
+    <div>
+      {tag}
+      <div className="rounded-xl border border-line overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left border-b border-line bg-cream/50">
+              <Th>Item</Th><Th>From</Th><Th className="text-right">Qty</Th><Th className="text-right">Price</Th><Th className="text-right">Amount</Th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {inv.lines.map((l) => (
+              <tr key={l.id}>
+                <td className="px-4 py-2.5">
+                  <div className="text-ink">{l.desc}</div>
+                  <div className="font-mono text-[10.5px] text-sage/70">{l.code}</div>
+                </td>
+                <td className="px-4 py-2.5"><SourceTag src={l.source} /></td>
+                <td className="px-4 py-2.5 text-right font-mono text-[12.5px]">{l.qty}</td>
+                <td className="px-4 py-2.5 text-right font-mono text-[12.5px]">${l.price.toFixed(2)}</td>
+                <td className="px-4 py-2.5 text-right font-mono text-[12.5px]">${(l.qty * l.price).toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="px-4 py-3 border-t border-line space-y-1 text-sm bg-cream/30">
+          <Row label="Subtotal" value={subtotal} />
+          <Row label={`Tax (${Math.round((inv.taxRate || 0) * 100)}%)`} value={tax} />
+          <Row label="Total" value={total} bold />
+        </div>
+      </div>
+      <p className="text-[11.5px] text-sage mt-2">Draft invoice — every line derives from the SOAP note above and requires vet approval before it is finalized.</p>
+    </div>
+  )
+}
+
+function SourceTag({ src }) {
+  return <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-pine-light/60 text-pine border border-pine/15">from {src}</span>
+}
+
+function Row({ label, value, bold }) {
+  return (
+    <div className={`flex justify-between ${bold ? 'font-semibold text-ink pt-1 border-t border-line' : 'text-sage'}`}>
+      <span>{label}</span>
+      <span className="font-mono">${value.toFixed(2)}</span>
+    </div>
+  )
+}
+
+function Th({ children, className = '' }) {
+  return <th className={`px-4 py-2 font-mono text-[10px] uppercase tracking-[0.1em] text-sage font-medium ${className}`}>{children}</th>
+}
+
+function Empty({ children }) {
+  return <div className="text-sage text-sm py-6 text-center">{children}</div>
+}
+
+function CheckIcon() {
+  return <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+}
+
+function fmtStamp(iso) {
+  if (!iso) return 'just now'
+  return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
 function Section({ title, children }) {

@@ -283,12 +283,12 @@ export const MOCK_PATIENTS = [
     calls: [{ who: 'Michael Chen', tag: 'Appointment', text: 'Called to schedule a dental cleaning after noticing tartar buildup. Booked for end of month.', when: 'May 13 at 3:20 PM' }],
     documents: ['Medical Records.pdf', 'Dental X-rays.pdf'] },
 
-  { id: 'p-max', name: 'Max', species: 'Dog', breed: 'German Shepherd', age: '7 years', weight: '80 lbs', owner: 'Emily Rodriguez', phone: '(555) 345-6789', status: 'doctor', statusText: 'Limping on front left leg', lastVisit: '2026-05-12', visits: 8,
-    preventive: 'Senior wellness panel recommended',
-    appointments: [{ label: 'Lameness recheck', when: 'May 24, 2026 at 2:00 PM', doctor: 'Dr. Martinez', status: 'scheduled' }],
-    caseHistory: [{ label: 'Lameness exam — front left leg', date: '2026-05-12', doctor: 'Dr. Martinez', tag: 'In exam' }],
-    calls: [{ who: 'Emily Rodriguez', tag: 'Symptom', text: 'Reported Max limping on the front left leg after a walk. Advised to bring in same day.', when: 'May 12 at 9:05 AM' }],
-    documents: ['Medical Records.pdf', 'Radiograph — L forelimb.pdf'] },
+  { id: 'p-max', name: 'Max', species: 'Cat', breed: 'Domestic Shorthair', age: '3 years', weight: '11 lbs', owner: 'Daniel Rivera', phone: '+1 (217) 555-0199', status: 'doctor', statusText: 'Paw-pad abscess, L forelimb', lastVisit: '2026-07-18', visits: 1,
+    preventive: 'New patient — establish baseline wellness plan',
+    appointments: [{ label: 'Paw / abscess recheck', when: 'Jul 23, 2026 at 2:00 PM', doctor: 'Dr. Martinez', status: 'scheduled' }],
+    caseHistory: [{ label: 'Lameness exam — front left leg', date: '2026-07-18', doctor: 'Dr. Martinez', tag: 'In exam' }],
+    calls: [{ who: 'Daniel Rivera', tag: 'Symptom', text: 'Reported Max limping on the front left leg after jumping down; excessive paw licking. Advised same-day visit.', when: 'Jul 18 at 9:05 AM' }],
+    documents: ['New Patient Intake.pdf'] },
 
   { id: 'p-luna', name: 'Luna', species: 'Cat', breed: 'Persian', age: '2 years', weight: '8 lbs', owner: 'David Kim', phone: '(555) 456-7890', status: 'follow-up', statusText: 'Skin irritation follow-up', lastVisit: '2026-05-12', visits: 2,
     preventive: 'Recheck dermatitis in 2 weeks',

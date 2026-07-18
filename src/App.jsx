@@ -24,6 +24,7 @@ import BookingModal from './pages/BookingModal.jsx'
 import Landing2 from './pages/Landing2.jsx'
 import ActionsPopup from './pages/ActionsPopup.jsx'
 import RevenueUplift from './pages/RevenueUplift.jsx'
+import Settings from './pages/Settings.jsx'
 
 const ni = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }
 const NAV = [
@@ -412,7 +413,7 @@ export default function App() {
           {view === 'followups' && <FollowUps store={store} />}
           {view === 'patients' && <Patients store={store} />}
           {view === 'analytics' && <ComingSoon label="Analytics" />}
-          {view === 'settings' && <ComingSoon label="Settings" />}
+          {view === 'settings' && <Settings store={store} />}
         </div>
       </main>
 

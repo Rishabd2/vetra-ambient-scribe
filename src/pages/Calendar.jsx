@@ -88,14 +88,85 @@ export default function CalendarPage({ store }) {
         <ApptPopup
           appt={selected}
           onClose={() => setSelected(null)}
+          onEdit={() => { setFormAppt(selected); setSelected(null) }}
           onOpenCall={selected.callId ? () => { store.openCall(selected.callId); setSelected(null) } : null}
+        />
+      )}
+
+      {formAppt && (
+        <ApptForm
+          appt={formAppt}
+          defaultDate={todayISO}
+          onClose={() => setFormAppt(null)}
+          onSave={(data) => {
+            if (formAppt.id) store.updateAppointment(formAppt.id, data)
+            else store.addAppointment({ ...data, source: 'staff' })
+            setFormAppt(null)
+          }}
         />
       )}
     </div>
   )
 }
 
-function ApptPopup({ appt, onClose, onOpenCall }) {
+// Create/edit an appointment. Presence of appt.id switches to edit mode.
+function ApptForm({ appt, defaultDate, onClose, onSave }) {
+  const [f, setF] = useState({
+    pet: appt.pet || '',
+    owner: appt.owner || '',
+    kind: appt.kind || '',
+    date: appt.date || defaultDate,
+    time: appt.time || '09:00',
+    dur: appt.dur || 30,
+  })
+  const set = (k) => (e) => setF((prev) => ({ ...prev, [k]: e.target.value }))
+  const submit = (e) => {
+    e.preventDefault()
+    if (!f.pet.trim()) return
+    onSave({ ...f, pet: f.pet.trim(), owner: f.owner.trim(), kind: f.kind.trim() || 'Appointment', dur: Number(f.dur) })
+  }
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-ink/25" onClick={onClose} />
+      <Card className="relative w-full max-w-md p-5 fade-up">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold text-lg">{appt.id ? 'Edit appointment' : 'Add appointment'}</h2>
+          <button onClick={onClose} className="text-sage hover:text-ink text-xl leading-none">✕</button>
+        </div>
+        <form onSubmit={submit} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <Label label="Patient"><input value={f.pet} onChange={set('pet')} className={apptInput} placeholder="e.g. Bella" autoFocus /></Label>
+            <Label label="Owner"><input value={f.owner} onChange={set('owner')} className={apptInput} placeholder="e.g. Sarah Chen" /></Label>
+          </div>
+          <Label label="Reason / type"><input value={f.kind} onChange={set('kind')} className={apptInput} placeholder="e.g. Wellness exam" /></Label>
+          <div className="grid grid-cols-3 gap-3">
+            <Label label="Date"><input type="date" value={f.date} onChange={set('date')} className={apptInput} /></Label>
+            <Label label="Time"><input type="time" value={f.time} onChange={set('time')} className={apptInput} /></Label>
+            <Label label="Min"><input type="number" min="10" step="5" value={f.dur} onChange={set('dur')} className={apptInput} /></Label>
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button type="submit" className="rounded-full bg-pine text-white px-4 py-2 text-sm font-medium hover:bg-pine-dark">
+              {appt.id ? 'Save changes' : 'Book appointment'}
+            </button>
+            <button type="button" onClick={onClose} className="rounded-full border border-line px-4 py-2 text-sm text-sage hover:text-ink">Cancel</button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  )
+}
+
+const apptInput = 'w-full rounded-lg border border-line px-3 py-2 text-sm focus:outline-none focus:border-pine/50'
+function Label({ label, children }) {
+  return (
+    <label className="block">
+      <span className="text-[11px] font-mono uppercase tracking-wide text-sage">{label}</span>
+      <div className="mt-1">{children}</div>
+    </label>
+  )
+}
+
+function ApptPopup({ appt, onClose, onEdit, onOpenCall }) {
   const isAgent = appt.source === 'agent'
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -114,11 +185,16 @@ function ApptPopup({ appt, onClose, onOpenCall }) {
           {appt.dur && <Field label="Duration" value={`${appt.dur} min`} />}
           <Field label="Booked by" value={isAgent ? 'Vetra agent' : 'Staff'} />
         </div>
-        {onOpenCall && (
-          <button onClick={onOpenCall} className="mt-4 w-full rounded-full bg-pine text-white py-2 text-sm font-medium hover:bg-pine-dark">
-            Open source call →
+        <div className="mt-4 flex gap-2">
+          <button onClick={onEdit} className="flex-1 rounded-full border border-line py-2 text-sm text-ink hover:border-pine/40">
+            Edit
           </button>
-        )}
+          {onOpenCall && (
+            <button onClick={onOpenCall} className="flex-1 rounded-full bg-pine text-white py-2 text-sm font-medium hover:bg-pine-dark">
+              Open source call →
+            </button>
+          )}
+        </div>
       </Card>
     </div>
   )

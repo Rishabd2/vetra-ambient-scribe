@@ -66,3 +66,15 @@ export function ChannelIcon({ channel }) {
   const map = { SMS: '💬', WhatsApp: '🟢', Email: '✉️', Phone: '☎' }
   return <span className="text-xs">{map[channel] || '💬'}</span>
 }
+
+export function ComingSoon({ label }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-24 text-center fade-up">
+      <div className="w-12 h-12 rounded-2xl bg-pine-light flex items-center justify-center text-pine mb-4">
+        <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+      </div>
+      <div className="font-semibold text-ink">{label}</div>
+      <div className="text-sm text-sage mt-1">Coming soon in this workflow.</div>
+    </div>
+  )
+}

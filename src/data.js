@@ -2,7 +2,7 @@
 export const NOW = new Date('2026-06-12T17:30:00+05:30')
 
 export const CLINICS = {
-  small: { name: 'Maple Street Vet Clinic', short: 'Maple St.', type: 'Primary care' },
+  small: { name: 'Urbana Paws Clinic', short: 'Urbana Paws', type: 'Primary care' },
   emergency: { name: 'Northside Emergency & Specialty', short: 'Northside ER', type: '24/7 Emergency' },
 }
 

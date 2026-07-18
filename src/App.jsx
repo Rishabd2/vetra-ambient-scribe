@@ -16,7 +16,7 @@ import Calls from './pages/Calls.jsx'
 import CalendarPage from './pages/Calendar.jsx'
 import FollowUps from './pages/FollowUps.jsx'
 import Patients from './pages/Patients.jsx'
-import Agents from './pages/Agents.jsx'
+import { ComingSoon } from './ui.jsx'
 import CallDrawer from './pages/CallDrawer.jsx'
 import BookingModal from './pages/BookingModal.jsx'
 import Landing2 from './pages/Landing2.jsx'
@@ -25,12 +25,15 @@ import RevenueUplift from './pages/RevenueUplift.jsx'
 
 const ni = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }
 const NAV = [
-  { id: 'overview', label: 'Overview', icon: <svg viewBox="0 0 24 24" className="w-4 h-4" {...ni}><rect x="3" y="3" width="7" height="9" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="16" width="7" height="5" rx="1.5" /></svg> },
-  { id: 'calls', label: 'Calls', icon: <svg viewBox="0 0 24 24" className="w-4 h-4" {...ni}><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg> },
+  { id: 'overview', label: 'Dashboard', icon: <svg viewBox="0 0 24 24" className="w-4 h-4" {...ni}><rect x="3" y="3" width="7" height="9" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="16" width="7" height="5" rx="1.5" /></svg> },
+  { id: 'calls', label: 'Inbox', icon: <svg viewBox="0 0 24 24" className="w-4 h-4" {...ni}><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg> },
   { id: 'calendar', label: 'Calendar', icon: <svg viewBox="0 0 24 24" className="w-4 h-4" {...ni}><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M4 10h16M9 3v4M15 3v4" /></svg> },
-  { id: 'followups', label: 'Follow-ups', icon: <svg viewBox="0 0 24 24" className="w-4 h-4" {...ni}><path d="M20 12a8 8 0 1 1-2.3-5.6M20 3v4h-4" /></svg> },
+  { id: 'timeline', label: 'Clinic Timeline', icon: <svg viewBox="0 0 24 24" className="w-4 h-4" {...ni}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg> },
   { id: 'patients', label: 'Patients', icon: <svg viewBox="0 0 24 24" className="w-4 h-4" {...ni}><circle cx="9" cy="8" r="3.5" /><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" /><path d="M16 11.5a3 3 0 1 0-1-5.8M21 20c0-2.6-1.6-4.6-4-5.2" /></svg> },
-  { id: 'agents', label: 'Agents', icon: <svg viewBox="0 0 24 24" className="w-4 h-4" {...ni}><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="3" /></svg> },
+  { id: 'notes', label: 'Doctor Notes', icon: <svg viewBox="0 0 24 24" className="w-4 h-4" {...ni}><path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" /><path d="M14 3v5h5M8 13h8M8 17h5" /></svg> },
+  { id: 'followups', label: 'Follow-ups', icon: <svg viewBox="0 0 24 24" className="w-4 h-4" {...ni}><path d="M20 12a8 8 0 1 1-2.3-5.6M20 3v4h-4" /></svg> },
+  { id: 'analytics', label: 'Analytics', icon: <svg viewBox="0 0 24 24" className="w-4 h-4" {...ni}><path d="M4 20V4M4 20h16M8 16v-4M13 16V8M18 16v-6" /></svg> },
+  { id: 'settings', label: 'Settings', icon: <svg viewBox="0 0 24 24" className="w-4 h-4" {...ni}><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2" /></svg> },
 ]
 
 export default function App() {
@@ -282,7 +285,7 @@ export default function App() {
           </div>
           <div>
             <div className="font-semibold tracking-tight leading-none">Vetra</div>
-            <div className="text-[10px] text-sage font-mono mt-0.5 tracking-wide">FRONT DESK AI</div>
+            <div className="text-[10px] text-sage font-mono mt-0.5 tracking-wide">URBANA PAWS CLINIC</div>
           </div>
         </button>
         <nav className="px-3 space-y-0.5 flex-1">
@@ -306,10 +309,10 @@ export default function App() {
         </nav>
         <div className="p-4 border-t border-line">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-pine text-white flex items-center justify-center text-xs font-semibold">DB</div>
+            <div className="w-8 h-8 rounded-full bg-pine text-white flex items-center justify-center text-xs font-semibold">DM</div>
             <div className="min-w-0">
-              <div className="text-sm font-medium leading-tight truncate">Debra B.</div>
-              <div className="text-[11px] text-sage">Practice Manager</div>
+              <div className="text-sm font-medium leading-tight truncate">Dr. Martinez</div>
+              <div className="text-[11px] text-sage">Veterinarian</div>
             </div>
           </div>
         </div>
@@ -331,7 +334,7 @@ export default function App() {
             </button>
             <div className="min-w-0">
               <h1 className="text-lg font-semibold tracking-tight capitalize">{NAV.find((n) => n.id === view)?.label}</h1>
-              <div className="text-[12px] text-sage truncate">Maple Street Vet Clinic · {formatDashboardDate(dashboardDate)}</div>
+              <div className="text-[12px] text-sage truncate">Urbana Paws Clinic · {formatDashboardDate(dashboardDate)}</div>
             </div>
           </div>
           <div className="hidden sm:flex items-center gap-2 font-mono text-[11px] text-sage shrink-0">
@@ -347,9 +350,12 @@ export default function App() {
           {view === 'overview' && <Overview store={store} />}
           {view === 'calls' && <Calls store={store} />}
           {view === 'calendar' && <CalendarPage store={store} />}
+          {view === 'timeline' && <ComingSoon label="Clinic Timeline" />}
+          {view === 'notes' && <ComingSoon label="Doctor Notes" />}
           {view === 'followups' && <FollowUps store={store} />}
           {view === 'patients' && <Patients store={store} />}
-          {view === 'agents' && <Agents store={store} />}
+          {view === 'analytics' && <ComingSoon label="Analytics" />}
+          {view === 'settings' && <ComingSoon label="Settings" />}
         </div>
       </main>
 

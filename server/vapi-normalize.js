@@ -16,7 +16,8 @@ export function normalizeVapiCall(call, assistant = {}) {
   const summary = call.analysis?.summary || call.summary || ''
   const transcript = transcriptFromCall(call)
   const phone = call.customer?.number || call.phoneNumber?.number || 'Web call'
-  const reason = firstOwnerLine(transcript) || (summary ? summary.split('.')[0] : 'Inbound call')
+  const d = extractDetails(transcript, summary)
+  const reason = d.reason || firstOwnerLine(transcript) || (summary ? summary.split('.')[0] : 'Inbound call')
   const urgency = URGENT.test(`${summary} ${reason}`) ? 'emergency' : 'routine'
 
   return {
@@ -29,8 +30,8 @@ export function normalizeVapiCall(call, assistant = {}) {
     status: live ? 'needs_action' : 'unreviewed',
     urgency,
     coverage: live ? 'at_risk' : 'covered',
-    caller: { name: 'Caller', phone },
-    pet: { name: 'Pet', species: '', breed: '', age: '' },
+    caller: { name: d.owner || (live ? 'Live caller' : 'Caller'), phone },
+    pet: { name: d.pet || 'Pet', species: d.species || '', breed: d.breed || '', age: d.age || '' },
     reason,
     summary: summary || (live ? 'Live call in progress…' : 'Call completed.'),
     receivedAt: started || new Date().toISOString(),
@@ -42,6 +43,64 @@ export function normalizeVapiCall(call, assistant = {}) {
     transcript,
     nextActions: [],
   }
+}
+
+// Pull owner/pet/species/age/reason out of the caller's turns + AI summary.
+// Heuristic but resilient; the summary is the most structured signal.
+export function extractDetails(transcript, summary = '') {
+  const callerText = transcript.filter(([w]) => w === 'caller').map(([, t]) => t).join(' ')
+  const hay = `${summary} ${transcript.map(([, t]) => t).join(' ')}`
+  const out = {}
+
+  // Owner name: prefer the summary's "X called" (most reliable), else the
+  // caller stating it. Reject filler like "My Name" / "Name Is".
+  const ownerFromSummary = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+called\b/.exec(summary)
+  const ownerFromCaller = /\b(?:my name is|this is|i am|i'm|name's|it's)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i.exec(callerText)
+  const ownerRaw = (ownerFromSummary && ownerFromSummary[1]) || (ownerFromCaller && ownerFromCaller[1])
+  if (ownerRaw && !/^(my|name|the|a)\b/i.test(ownerRaw)) out.owner = titleCase(ownerRaw)
+
+  // Species
+  const species = /\b(dog|cat|puppy|kitten|rabbit|bird|canary|reptile|bearded dragon|ferret|hamster|guinea pig)\b/i.exec(hay)
+  if (species) out.species = normalizeSpecies(species[1])
+
+  // Pet name: "for my dog, X" / "dog's name is X" / "appointment for X"
+  const pet =
+    /(?:dog|cat|puppy|kitten|pet|rabbit|bird)(?:'s)?(?:\s+name)?(?:\s+is|,|\s+called|\s+named)?\s+([A-Z][a-z]+)/.exec(hay)
+    || /\bfor\s+(?:my\s+\w+\s+)?([A-Z][a-z]+)\b/.exec(summary)
+  if (pet && !isCommonWord(pet[1])) out.pet = titleCase(pet[1])
+
+  // Breed
+  const breed = /\b(golden retriever|labrador|german shepherd|bulldog|poodle|beagle|dachshund|corgi|husky|maine coon|persian|siamese|bengal|ragdoll|portuguese water dog|holland lop)\b/i.exec(hay)
+  if (breed) out.breed = titleCase(breed[1])
+
+  // Age: "5 years old", "5-year-old", "he's 5"
+  const age = /\b(\d{1,2})[\s-]*(?:years?|yrs?|yr)[\s-]*old\b/i.exec(hay) || /\b(\d{1,2})[\s-]*year[\s-]*old\b/i.exec(hay)
+  if (age) out.age = `${age[1]}y`
+
+  // Reason: prefer a symptom/purpose clause from the summary
+  const reason = /\bfor\s+(?:a\s+|an\s+)?([^.,]+?(?:appointment|visit|check[- ]?up|exam|vaccination|cleaning|injury|limping|pain|wellness)[^.,]*)/i.exec(summary)
+    || /\b(?:who is|because|due to)\s+([^.,]+)/i.exec(summary)
+  if (reason) out.reason = capitalize(reason[1].trim().slice(0, 80))
+
+  return out
+}
+
+function titleCase(s) {
+  return String(s).replace(/\w\S*/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
+}
+function capitalize(s) {
+  return s ? s[0].toUpperCase() + s.slice(1) : s
+}
+function normalizeSpecies(s) {
+  const l = s.toLowerCase()
+  if (l === 'puppy') return 'Dog'
+  if (l === 'kitten') return 'Cat'
+  if (l === 'canary') return 'Bird'
+  if (l === 'bearded dragon') return 'Reptile'
+  return titleCase(l)
+}
+function isCommonWord(w) {
+  return /^(the|a|an|my|his|her|your|our|is|was|old|new|patient|appointment|visit|him|her|it)$/i.test(w)
 }
 
 // Vapi returns a plain-text `transcript` and/or a `messages[]` array. Prefer

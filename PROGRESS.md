@@ -25,6 +25,4 @@ Dev server: `npm run dev` → http://localhost:5173/ (Vite auto-port; plan said 
 
 ## Phase B — Backend
 (pending Phase A)
-
-## Metrics / notes
 - (log blocked tasks, tool-call overruns, and metric readings here)

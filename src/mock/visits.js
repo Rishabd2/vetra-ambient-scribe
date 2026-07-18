@@ -260,3 +260,96 @@ export function answerFor(question) {
   const hit = MOCK_ANSWERS.find((a) => a.match.test(question))
   return hit ? hit.answer : 'Based on the transcript and Bella\u2019s chart so far, I don\u2019t have that specific detail recorded. Everything discussed this visit points to a healthy annual exam with a benign-appearing mass under evaluation.'
 }
+
+// Full patient directory for the Patients grid. Each opens a detail drawer.
+// `status` drives the status-line label: checked-in | scheduling | doctor | follow-up.
+export const MOCK_PATIENTS = [
+  { id: 'p-bella', name: 'Bella', species: 'Dog', breed: 'Golden Retriever', age: '5 years', weight: '65 lbs', owner: 'Sarah Johnson', phone: '(555) 123-4567', status: 'checked-in', statusText: 'Annual checkup & vaccination', lastVisit: '2026-05-12', visits: 5,
+    preventive: 'Heartworm test (annual — completed this visit)',
+    appointments: [
+      { label: 'Microchip check', when: 'May 28, 2026 at 10:00 AM', doctor: 'Dr. Martinez', status: 'scheduled' },
+      { label: 'Heartworm test', when: 'May 26, 2026 at 10:00 AM', doctor: 'Dr. Martinez', status: 'scheduled' },
+      { label: 'Vaccination booster', when: 'May 22, 2026 at 10:00 AM', doctor: 'Dr. Martinez', status: 'scheduled' },
+      { label: 'Annual checkup & vaccination', when: 'May 21, 2026 at 9:00 AM', doctor: 'Dr. Martinez', status: 'scheduled' },
+    ],
+    caseHistory: [{ label: 'Annual checkup & vaccination', date: '2026-02-07', doctor: 'Dr. Martinez', tag: 'Checked-in' }],
+    calls: [{ who: 'Sarah Johnson', tag: 'Appointment', text: "Client called to confirm Bella's annual checkup appointment for today. Confirmed 9:00 AM slot with Dr. Martinez. Also asked about vaccination schedule for the year.", when: 'May 21 at 1:15 AM' }],
+    documents: ['Medical Records.pdf', 'Vaccination History.pdf', 'Lab Results — Feb 2026.pdf'] },
+
+  { id: 'p-whiskers', name: 'Whiskers', species: 'Cat', breed: 'Siamese', age: '3 years', weight: '10 lbs', owner: 'Michael Chen', phone: '(555) 234-5678', status: 'scheduling', statusText: 'Dental cleaning', lastVisit: '2026-05-13', visits: 3,
+    preventive: 'FVRCP booster due in 2 months',
+    appointments: [{ label: 'Dental cleaning', when: 'May 30, 2026 at 11:00 AM', doctor: 'Dr. Martinez', status: 'scheduled' }],
+    caseHistory: [{ label: 'Dental evaluation', date: '2026-05-13', doctor: 'Dr. Martinez', tag: 'Scheduling' }],
+    calls: [{ who: 'Michael Chen', tag: 'Appointment', text: 'Called to schedule a dental cleaning after noticing tartar buildup. Booked for end of month.', when: 'May 13 at 3:20 PM' }],
+    documents: ['Medical Records.pdf', 'Dental X-rays.pdf'] },
+
+  { id: 'p-max', name: 'Max', species: 'Dog', breed: 'German Shepherd', age: '7 years', weight: '80 lbs', owner: 'Emily Rodriguez', phone: '(555) 345-6789', status: 'doctor', statusText: 'Limping on front left leg', lastVisit: '2026-05-12', visits: 8,
+    preventive: 'Senior wellness panel recommended',
+    appointments: [{ label: 'Lameness recheck', when: 'May 24, 2026 at 2:00 PM', doctor: 'Dr. Martinez', status: 'scheduled' }],
+    caseHistory: [{ label: 'Lameness exam — front left leg', date: '2026-05-12', doctor: 'Dr. Martinez', tag: 'In exam' }],
+    calls: [{ who: 'Emily Rodriguez', tag: 'Symptom', text: 'Reported Max limping on the front left leg after a walk. Advised to bring in same day.', when: 'May 12 at 9:05 AM' }],
+    documents: ['Medical Records.pdf', 'Radiograph — L forelimb.pdf'] },
+
+  { id: 'p-luna', name: 'Luna', species: 'Cat', breed: 'Persian', age: '2 years', weight: '8 lbs', owner: 'David Kim', phone: '(555) 456-7890', status: 'follow-up', statusText: 'Skin irritation follow-up', lastVisit: '2026-05-12', visits: 2,
+    preventive: 'Recheck dermatitis in 2 weeks',
+    appointments: [{ label: 'Dermatitis recheck', when: 'May 26, 2026 at 1:30 PM', doctor: 'Dr. Lee', status: 'scheduled' }],
+    caseHistory: [{ label: 'Skin irritation exam', date: '2026-05-12', doctor: 'Dr. Lee', tag: 'Follow-up' }],
+    calls: [{ who: 'David Kim', tag: 'Symptom', text: 'Noticed Luna scratching and some redness on the belly. Booked a derm workup.', when: 'May 12 at 11:40 AM' }],
+    documents: ['Medical Records.pdf', 'Skin cytology.pdf'] },
+
+  { id: 'p-charlie', name: 'Charlie', species: 'Dog', breed: 'Labrador', age: '4 years', weight: '70 lbs', owner: 'Lisa Patel', phone: '(555) 567-8901', status: 'scheduling', statusText: 'Weight management consult', lastVisit: '2026-05-13', visits: 4,
+    preventive: 'Diet plan review at next visit',
+    appointments: [{ label: 'Weight management consult', when: 'May 29, 2026 at 3:00 PM', doctor: 'Dr. Martinez', status: 'scheduled' }],
+    caseHistory: [{ label: 'Wellness check', date: '2026-05-13', doctor: 'Dr. Martinez', tag: 'Scheduling' }],
+    calls: [{ who: 'Lisa Patel', tag: 'Appointment', text: 'Asked for guidance on Charlie’s weight gain. Scheduled a nutrition consult.', when: 'May 13 at 10:10 AM' }],
+    documents: ['Medical Records.pdf'] },
+
+  { id: 'p-tweety', name: 'Tweety', species: 'Bird', breed: 'Canary', age: '1 year', weight: '0.5 lbs', owner: 'James Wilson', phone: '(555) 678-9012', status: 'seen', statusText: 'Wellness exam', lastVisit: '2026-05-16', visits: 1,
+    preventive: 'Annual avian wellness due next year',
+    appointments: [],
+    caseHistory: [{ label: 'Avian wellness exam', date: '2026-05-16', doctor: 'Dr. Lee', tag: 'Seen' }],
+    calls: [{ who: 'James Wilson', tag: 'Appointment', text: 'New client, booked a first wellness exam for Tweety.', when: 'May 16 at 2:00 PM' }],
+    documents: ['Medical Records.pdf'] },
+
+  { id: 'p-mochi', name: 'Mochi', species: 'Rabbit', breed: 'Holland Lop', age: '2 years', weight: '4 lbs', owner: 'Amanda Foster', phone: '(555) 789-0123', status: 'checked-in', statusText: 'Nail trimming & ear check', lastVisit: '2026-05-15', visits: 3,
+    preventive: 'Dental check recommended',
+    appointments: [{ label: 'Nail trim & ear check', when: 'May 27, 2026 at 9:30 AM', doctor: 'Dr. Lee', status: 'scheduled' }],
+    caseHistory: [{ label: 'Nail trim & ear check', date: '2026-05-15', doctor: 'Dr. Lee', tag: 'Checked-in' }],
+    calls: [{ who: 'Amanda Foster', tag: 'Appointment', text: 'Routine nail trim and ear check for Mochi.', when: 'May 15 at 8:45 AM' }],
+    documents: ['Medical Records.pdf'] },
+
+  { id: 'p-duke', name: 'Duke', species: 'Dog', breed: 'Bulldog', age: '6 years', weight: '50 lbs', owner: 'Robert Taylor', phone: '(555) 890-1234', status: 'doctor', statusText: 'Breathing difficulty', lastVisit: '2026-05-14', visits: 6,
+    preventive: 'Brachycephalic airway monitoring',
+    appointments: [{ label: 'Respiratory recheck', when: 'May 25, 2026 at 4:00 PM', doctor: 'Dr. Lee', status: 'scheduled' }],
+    caseHistory: [{ label: 'Respiratory recheck', date: '2026-05-14', doctor: 'Dr. Lee', tag: 'In exam' }],
+    calls: [{ who: 'Robert Taylor', tag: 'Symptom', text: 'Duke was breathing heavily and snorting more than usual. Advised recheck.', when: 'May 14 at 5:30 PM' }],
+    documents: ['Medical Records.pdf', 'Chest radiograph.pdf'] },
+
+  { id: 'p-shadow', name: 'Shadow', species: 'Cat', breed: 'Maine Coon', age: '4 years', weight: '15 lbs', owner: 'Sarah Johnson', phone: '(555) 123-4567', status: 'follow-up', statusText: 'Vomiting episode observation', lastVisit: '2026-05-14', visits: 2,
+    preventive: 'Bloodwork recheck if symptoms persist',
+    appointments: [{ label: 'GI recheck', when: 'May 28, 2026 at 11:15 AM', doctor: 'Dr. Martinez', status: 'scheduled' }],
+    caseHistory: [{ label: 'Vomiting episode observation', date: '2026-05-14', doctor: 'Dr. Martinez', tag: 'Follow-up' }],
+    calls: [{ who: 'Sarah Johnson', tag: 'Symptom', text: 'Shadow vomited twice overnight. No blood. Advised monitoring and a recheck.', when: 'May 14 at 7:20 AM' }],
+    documents: ['Medical Records.pdf'] },
+
+  { id: 'p-rex', name: 'Rex', species: 'Reptile', breed: 'Bearded Dragon', age: '3 years', weight: '1 lb', owner: 'Emily Rodriguez', phone: '(555) 345-6789', status: 'seen', statusText: 'Wellness exam', lastVisit: '2026-05-15', visits: 1,
+    preventive: 'Husbandry review at next visit',
+    appointments: [],
+    caseHistory: [{ label: 'Reptile wellness exam', date: '2026-05-15', doctor: 'Dr. Lee', tag: 'Seen' }],
+    calls: [{ who: 'Emily Rodriguez', tag: 'Appointment', text: 'First exam for Rex, general wellness and husbandry questions.', when: 'May 15 at 1:00 PM' }],
+    documents: ['Medical Records.pdf'] },
+
+  { id: 'p-oliver', name: 'Oliver', species: 'Dog', breed: 'Dachshund', age: '4 years', weight: '18 lbs', owner: 'Marcus Webb', phone: '(555) 901-2345', status: 'seen', statusText: 'Back pain evaluation', lastVisit: '2026-05-11', visits: 3,
+    preventive: 'IVDD precautions reviewed',
+    appointments: [{ label: 'Spinal recheck', when: 'May 24, 2026 at 10:45 AM', doctor: 'Dr. Martinez', status: 'scheduled' }],
+    caseHistory: [{ label: 'Back pain evaluation', date: '2026-05-11', doctor: 'Dr. Martinez', tag: 'Seen' }],
+    calls: [{ who: 'Marcus Webb', tag: 'Symptom', text: 'Oliver reluctant to jump and yelping. Evaluated for back pain.', when: 'May 11 at 4:15 PM' }],
+    documents: ['Medical Records.pdf', 'Spinal radiograph.pdf'] },
+
+  { id: 'p-cleo', name: 'Cleo', species: 'Cat', breed: 'Bengal', age: '2 years', weight: '9 lbs', owner: 'Priya Sharma', phone: '(555) 012-3456', status: 'seen', statusText: 'Spay pre-op', lastVisit: '2026-05-11', visits: 2,
+    preventive: 'Pre-anesthetic bloodwork completed',
+    appointments: [{ label: 'Spay surgery', when: 'May 23, 2026 at 8:00 AM', doctor: 'Dr. Martinez', status: 'scheduled' }],
+    caseHistory: [{ label: 'Spay pre-op', date: '2026-05-11', doctor: 'Dr. Martinez', tag: 'Seen' }],
+    calls: [{ who: 'Priya Sharma', tag: 'Appointment', text: 'Scheduled Cleo’s spay and pre-op bloodwork.', when: 'May 11 at 9:50 AM' }],
+    documents: ['Medical Records.pdf', 'Pre-anesthetic bloodwork.pdf'] },
+]

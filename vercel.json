@@ -33,22 +33,6 @@
       "destination": "/api/lookup_patient"
     },
     {
-      "source": "/check_due_care",
-      "destination": "/api/check_due_care"
-    },
-    {
-      "source": "/clinic_faq",
-      "destination": "/api/clinic_faq"
-    },
-    {
-      "source": "/save_call_context",
-      "destination": "/api/save_call_context"
-    },
-    {
-      "source": "/notify_emergency_team",
-      "destination": "/api/notify_emergency_team"
-    },
-    {
       "source": "/webhooks/vapi",
       "destination": "/api/vapi-webhook"
     },

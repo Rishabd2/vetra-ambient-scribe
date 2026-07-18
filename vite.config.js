@@ -35,14 +35,6 @@ function localApiRoutes() {
     '/check_availability_of_slots': () => import('./api/check_availability_of_slots.js'),
     '/api/lookup_patient': () => import('./api/lookup_patient.js'),
     '/lookup_patient': () => import('./api/lookup_patient.js'),
-    '/api/check_due_care': () => import('./api/check_due_care.js'),
-    '/check_due_care': () => import('./api/check_due_care.js'),
-    '/api/clinic_faq': () => import('./api/clinic_faq.js'),
-    '/clinic_faq': () => import('./api/clinic_faq.js'),
-    '/api/save_call_context': () => import('./api/save_call_context.js'),
-    '/save_call_context': () => import('./api/save_call_context.js'),
-    '/api/notify_emergency_team': () => import('./api/notify_emergency_team.js'),
-    '/notify_emergency_team': () => import('./api/notify_emergency_team.js'),
   }
 
   return {

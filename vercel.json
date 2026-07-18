@@ -1,0 +1,60 @@
+{
+  "rewrites": [
+    {
+      "source": "/book_appointment",
+      "destination": "/api/book_appointment"
+    },
+    {
+      "source": "/cancel_appointment",
+      "destination": "/api/cancel_appointment"
+    },
+    {
+      "source": "/reschedule_appointment",
+      "destination": "/api/reschedule_appointment"
+    },
+    {
+      "source": "/check_availability_of_slots",
+      "destination": "/api/check_availability_of_slots"
+    },
+    {
+      "source": "/api/cal/book-appointment",
+      "destination": "/api/book_appointment"
+    },
+    {
+      "source": "/api/cal/cancel-appointment",
+      "destination": "/api/cancel_appointment"
+    },
+    {
+      "source": "/api/cal/reschedule-appointment",
+      "destination": "/api/reschedule_appointment"
+    },
+    {
+      "source": "/lookup_patient",
+      "destination": "/api/lookup_patient"
+    },
+    {
+      "source": "/check_due_care",
+      "destination": "/api/check_due_care"
+    },
+    {
+      "source": "/clinic_faq",
+      "destination": "/api/clinic_faq"
+    },
+    {
+      "source": "/save_call_context",
+      "destination": "/api/save_call_context"
+    },
+    {
+      "source": "/notify_emergency_team",
+      "destination": "/api/notify_emergency_team"
+    },
+    {
+      "source": "/webhooks/call-completed",
+      "destination": "/api/ringg-webhook"
+    },
+    {
+      "source": "/revenue",
+      "destination": "/"
+    }
+  ]
+}

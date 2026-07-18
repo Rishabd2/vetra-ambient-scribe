@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Card, SectionLabel, UrgencyBadge, StatusBadge, Avatar } from '../ui.jsx'
 import { fmtTime, fmtDay, fmtDur, fmtMoney } from '../data.js'
 
@@ -22,7 +22,7 @@ export default function Calls({ store }) {
   return (
     <div className="space-y-4 fade-up">
       {liveCalls.map((c) => (
-        <LiveTranscript key={c.id} call={c} onOpen={() => store.openCall(c.id)} />
+        <LiveTranscript key={c.id} call={c} onOpen={() => store.openCall(c.id)} store={store} />
       ))}
 
       <div className="flex items-center gap-1.5">
@@ -129,23 +129,63 @@ function ActionChip({ call, onClick }) {
   )
 }
 
-function LiveTranscript({ call, onOpen }) {
+function LiveTranscript({ call, onOpen, store }) {
+  const [q, setQ] = useState('')
+  const [status, setStatus] = useState(null)
+  const [sending, setSending] = useState(false)
+  const scrollRef = useRef(null)
   const turns = call.transcript || []
-  const last = turns.slice(-6)
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+  }, [turns.length])
+
+  const ask = async (e) => {
+    e.preventDefault()
+    const message = q.trim()
+    if (!message || sending) return
+    setSending(true)
+    setStatus(null)
+    try {
+      const r = await fetch('/api/vapi-say', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ callId: call.vapiId || call.id, message }),
+      }).then((x) => x.json())
+      if (r.ok) {
+        setStatus({ ok: true, text: `Sent to Haley — she’ll ask this on the call.` })
+        setQ('')
+        // On the scripted demo call, show Haley voicing the request live.
+        if (r.demo && store?.injectLiveTurn) {
+          store.injectLiveTurn(call.id, [['agent', phraseAsAsk(message)]])
+        }
+      } else {
+        setStatus({ ok: false, text: r.error || 'Could not reach the live call.' })
+      }
+    } catch {
+      setStatus({ ok: false, text: 'Network error reaching the call.' })
+    } finally {
+      setSending(false)
+    }
+  }
+
   return (
-    <Card className="overflow-hidden border-pine/30">
+    <Card className="overflow-hidden border-pine/40 ring-1 ring-pine/10">
       <div className="px-5 py-3 border-b border-line flex items-center justify-between gap-3 bg-pine-light/40">
         <div className="flex items-center gap-2 min-w-0">
           <span className="w-2 h-2 rounded-full bg-pine live-dot shrink-0" />
           <span className="font-mono text-[11px] uppercase tracking-wider text-pine shrink-0">Live call</span>
-          <span className="text-sm font-medium truncate">{call.caller.name} · {call.caller.phone}</span>
+          <span className="text-sm font-medium truncate">
+            {call.pet.name !== 'Pet' ? `${call.pet.name} · ` : ''}{call.caller.name} · {call.caller.phone}
+          </span>
         </div>
         <button onClick={onOpen} className="text-[12px] text-pine hover:underline shrink-0">Open →</button>
       </div>
-      <div className="px-5 py-4 space-y-2.5 max-h-64 overflow-y-auto">
-        {last.length === 0 && <div className="text-sm text-sage">Connecting… waiting for the first words.</div>}
-        {last.map(([role, text], i) => (
-          <div key={i} className="flex gap-2.5">
+
+      <div ref={scrollRef} className="px-5 py-4 space-y-2.5 max-h-72 overflow-y-auto">
+        {turns.length === 0 && <div className="text-sm text-sage">Connecting… waiting for the first words.</div>}
+        {turns.map(([role, text], i) => (
+          <div key={i} className="flex gap-2.5 fade-up">
             <span className={`font-mono text-[10px] mt-1 w-12 shrink-0 ${role === 'agent' ? 'text-pine' : 'text-sage'}`}>
               {role === 'agent' ? 'HALEY' : 'CALLER'}
             </span>
@@ -153,8 +193,29 @@ function LiveTranscript({ call, onOpen }) {
           </div>
         ))}
       </div>
+
+      <form onSubmit={ask} className="px-5 py-3 border-t border-line flex gap-2 bg-white">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Tell Haley what to ask… (e.g. ask for vaccination records)"
+          className="flex-1 rounded-full border border-line px-4 py-2 text-sm focus:outline-none focus:border-pine/50"
+        />
+        <button type="submit" disabled={sending} className="rounded-full bg-pine text-white px-4 py-2 text-sm font-medium hover:bg-pine-dark disabled:opacity-50">
+          {sending ? 'Sending…' : 'Ask live'}
+        </button>
+      </form>
+      {status && (
+        <div className={`px-5 pb-3 text-[12px] ${status.ok ? 'text-pine' : 'text-amber-700'}`}>{status.text}</div>
+      )}
     </Card>
   )
+}
+
+function phraseAsAsk(message) {
+  let m = message.trim().replace(/^(can you |could you |please )?(ask|check|find out|get|confirm)\s+(for |about |if |whether )?/i, '')
+  m = m.replace(/^(the|their|his|her|your)\s+/i, '')
+  return `Of course — let me confirm that. Can you tell me about ${m.replace(/[.?!]+$/, '')}?`
 }
 
 function Th({ children, className = '' }) {

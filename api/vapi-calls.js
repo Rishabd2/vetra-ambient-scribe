@@ -44,7 +44,17 @@ export default async function handler(req, res) {
     const params = new URLSearchParams({ assistantId, limit: String(limit) })
     const raw = await vapiFetch(`/call?${params}`, { apiKey })
     const list = Array.isArray(raw) ? raw : Array.isArray(raw?.results) ? raw.results : []
-    const calls = list.map((item) => normalizeVapiCall(item, agent))
+
+    // In-progress calls: the list payload lags, so re-fetch each live call's
+    // detail (progressive transcript + monitor.controlUrl) in parallel.
+    const liveIds = list
+      .filter((c) => ['in-progress', 'ringing', 'forwarding', 'queued'].includes(c.status))
+      .map((c) => c.id)
+    const details = await Promise.all(
+      liveIds.map((id) => vapiFetch(`/call/${id}`, { apiKey }).catch(() => null)),
+    )
+    const detailById = new Map(details.filter(Boolean).map((d) => [d.id, d]))
+    const calls = list.map((item) => normalizeVapiCall(detailById.get(item.id) || item, agent))
 
     res.setHeader('Cache-Control', 'no-store, max-age=0')
     res.status(200).json({

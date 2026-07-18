@@ -38,7 +38,8 @@ export function normalizeVapiCall(call, assistant = {}) {
     updatedAt: ended || started || new Date().toISOString(),
     duration: durationSeconds(started, ended),
     estValue: 0,
-    recordingUrl: call.recordingUrl || null,
+    recordingUrl: call.recordingUrl || call.artifact?.recordingUrl || null,
+    controlUrl: call.monitor?.controlUrl || null,
     agentName: assistant.name || DEFAULT_VAPI_ASSISTANT_NAME,
     transcript,
     nextActions: [],
@@ -103,17 +104,20 @@ function isCommonWord(w) {
   return /^(the|a|an|my|his|her|your|our|is|was|old|new|patient|appointment|visit|him|her|it)$/i.test(w)
 }
 
-// Vapi returns a plain-text `transcript` and/or a `messages[]` array. Prefer
-// messages (role-tagged); fall back to parsing the "AI:/User:" text blob.
+// Vapi returns a plain-text `transcript` and/or a `messages[]` array (both also
+// mirrored under `artifact`). Prefer messages (role-tagged); fall back to the
+// "AI:/User:" text blob.
 export function transcriptFromCall(call) {
-  const msgs = Array.isArray(call.messages) ? call.messages : []
+  const msgs = Array.isArray(call.messages) && call.messages.length
+    ? call.messages
+    : (call.artifact?.messages || [])
   const turns = msgs
     .filter((m) => m.role === 'user' || m.role === 'bot' || m.role === 'assistant')
     .map((m) => [m.role === 'user' ? 'caller' : 'agent', cleanText(m.message || m.content)])
     .filter(([, text]) => text)
   if (turns.length) return turns
 
-  const raw = cleanText(call.transcript)
+  const raw = cleanText(call.transcript || call.artifact?.transcript)
   if (!raw) return []
   return raw
     .split(/\n+/)

@@ -125,11 +125,20 @@ export default function App() {
     }
 
     sync()
-    timer = window.setInterval(() => sync({ quiet: true }), VAPI_POLL_MS)
+    // Adaptive cadence: poll fast (2s) while a call is live so the transcript
+    // stays near-real-time, otherwise back off to the normal interval.
+    const schedule = () => {
+      const anyLive = (callsRef.current || []).some((c) => c.live)
+      timer = window.setTimeout(async () => {
+        await sync({ quiet: true })
+        if (!cancelled) schedule()
+      }, anyLive ? 2000 : VAPI_POLL_MS)
+    }
+    schedule()
 
     return () => {
       cancelled = true
-      window.clearInterval(timer)
+      window.clearTimeout(timer)
     }
   }, [])
 
@@ -250,6 +259,8 @@ export default function App() {
 
   const store = {
     calls, appointments, followups, memoryRows, dashboardDate, vapiSync,
+    injectLiveTurn: (callId, turns) =>
+      updateCalls((cs) => cs.map((c) => (c.id === callId ? { ...c, transcript: [...(c.transcript || []), ...turns] } : c))),
     visits, selectedVisitId,
     selectVisit: (id) => setSelectedVisitId(id),
     endVisit: (id) => setVisits((vs) => vs.map((v) => (v.id === id ? { ...v, status: 'draft' } : v))),

@@ -97,14 +97,17 @@ export default function App() {
 
         if (payload.connected) {
           const liveCalls = payload.calls || []
-          const base = connectedRef.current ? callsRef.current : []
+          // Seed history is the permanent baseline — live Vapi calls merge on
+          // top so the dashboard stays lived-in instead of collapsing to the
+          // few real calls. Derived collections keep their seed rows too.
+          const base = connectedRef.current ? callsRef.current : SEED_CALLS
           connectedRef.current = true
           const merged = mergeVapiCalls(base, liveCalls)
           callsRef.current = merged
           setCalls(merged)
           setAppointments(mergeAppointments(SEED_APPOINTMENTS, appointmentsFromCalls(merged)))
-          setFollowups(followupsFromCalls(merged))
-          setMemoryRows(memoryRowsFromCalls(merged))
+          setFollowups([...SEED_FOLLOWUPS, ...followupsFromCalls(liveCalls)])
+          setMemoryRows([...memoryRowsFromCalls(liveCalls), ...MEMORY_ROWS])
           setDashboardDate(payload.dashboardDate || getDashboardDate(merged))
           const agentName = payload.agent?.name || VAPI_AGENT_LABEL
           setVapiSync({

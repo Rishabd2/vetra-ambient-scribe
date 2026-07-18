@@ -11,12 +11,12 @@ export const SAMPLE_PATIENTS = [
     phone: '44790221168',
     pets: [
       {
-        pet_name: 'bruno',
+        pet_name: 'shadow',
         pet_species: 'cat',
         pet_breed: 'bengal',
         pet_age: '3 years',
         prior_issue: 'limping',
-        last_summary: 'Bruno was discussed for limping and an urgent same-day visit request. Caller prefers clear SMS confirmation.',
+        last_summary: 'Shadow was discussed for limping and an urgent same-day visit request. Caller prefers clear SMS confirmation.',
         open_followups: 'Vaccination reminder due; confirm whether limping has improved.',
         due_care: [
           { item: 'FVRCP booster', priority: 'high', due_date: '2026-06-24', note: 'Offer to add vaccine review to the same visit if clinically appropriate.' },
@@ -42,12 +42,12 @@ export const SAMPLE_PATIENTS = [
     phone: '1555010102',
     pets: [
       {
-        pet_name: 'bruno',
+        pet_name: 'cooper',
         pet_species: 'dog',
         pet_breed: 'labrador',
         pet_age: '4 years',
         prior_issue: 'regular checkup',
-        last_summary: 'Bruno came in for a regular checkup and the owner prefers simple SMS confirmation.',
+        last_summary: 'Cooper came in for a regular checkup and the owner prefers simple SMS confirmation.',
         open_followups: 'None.',
         due_care: [
           { item: 'Annual wellness exam', priority: 'medium', due_date: '2026-07-05', note: 'Can be combined with any sick or limping visit.' },

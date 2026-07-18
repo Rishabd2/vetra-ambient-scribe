@@ -681,7 +681,7 @@ export const SEED_APPOINTMENTS = [
   { id: 'ap22', date: '2026-06-15', time: '09:00', dur: 30, pet: 'Charlie', owner: 'T. Iwu', kind: 'Annual exam', source: 'staff' },
   { id: 'ap23', date: '2026-06-15', time: '15:30', dur: 30, pet: 'Olive', owner: 'M. Delgado', kind: 'Dermatology recheck', source: 'agent' },
   { id: 'ap24', date: '2026-06-16', time: '11:30', dur: 30, pet: 'Sushi', owner: 'Yuki Tanaka', kind: 'Microchip + wellness', source: 'agent', callId: 'syn-15' },
-  { id: 'ap25', date: '2026-06-16', time: '13:30', dur: 30, pet: 'Bruno', owner: 'K. Larsson', kind: 'Dental recheck', source: 'staff' },
+  { id: 'ap25', date: '2026-06-16', time: '13:30', dur: 30, pet: 'Rocky', owner: 'K. Larsson', kind: 'Dental recheck', source: 'staff' },
   { id: 'ap26', date: '2026-06-17', time: '10:00', dur: 30, pet: 'Willow', owner: 'A. Petrov', kind: 'Vaccination', source: 'agent' },
   { id: 'ap27', date: '2026-06-18', time: '14:00', dur: 30, pet: 'Gus', owner: 'Diane Whitlock', kind: 'Anal gland expression', source: 'agent', callId: 'syn-17' },
   // ── Filling out the week ──
@@ -727,7 +727,7 @@ export const SEED_APPOINTMENTS = [
   { id: 'ap64', date: '2026-06-23', time: '09:30', dur: 30, pet: 'Theo', owner: 'C. Meyer', kind: 'Dental consult', source: 'agent' },
   { id: 'ap65', date: '2026-06-23', time: '11:00', dur: 30, pet: 'Mabel', owner: 'S. Duarte', kind: 'Senior wellness', source: 'staff' },
   { id: 'ap66', date: '2026-06-23', time: '15:30', dur: 30, pet: 'Finn', owner: 'H. Wallace', kind: 'Ear infection recheck', source: 'agent' },
-  { id: 'ap67', date: '2026-06-24', time: '10:00', dur: 30, pet: 'Bruno', owner: 'Maya Shah', kind: 'FVRCP booster review', source: 'agent' },
+  { id: 'ap67', date: '2026-06-24', time: '10:00', dur: 30, pet: 'Milo', owner: 'Maya Shah', kind: 'FVRCP booster review', source: 'agent' },
   { id: 'ap68', date: '2026-06-24', time: '13:00', dur: 30, pet: 'Kiki', owner: 'N. Gupta', kind: 'Wellness exam', source: 'staff' },
   { id: 'ap69', date: '2026-06-24', time: '16:00', dur: 30, pet: 'Taco', owner: 'R. Evans', kind: 'Lameness exam', source: 'agent' },
   { id: 'ap70', date: '2026-06-25', time: '09:00', dur: 30, pet: 'Blue', owner: 'J. Morgan', kind: 'Vaccination', source: 'agent' },

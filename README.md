@@ -1,14 +1,30 @@
-# Vetra — veterinary  AI  copilot for your practice.
+# Vetra — the AI-native operating system for veterinary clinics
 
-Vetra is a copilot for veterinary clinics.** A
-voice agent (built on [Vapi](https://vapi.ai)) sits in on the exam-room visit, and
-Vetra turns that live conversation into finished clinical work — a SOAP note, an
-updated patient chart, follow-up tasks, and a SOAP-derived invoice — while the vet
-just talks to the pet owner.
+Vetra turns every incoming conversation into **structured context, a supervised next
+step, and clear ownership** — so more opportunities become completed care instead of
+getting lost between the phone, the front desk, and the clinical team.
 
-Every artifact the AI produces lands in a **Draft state and only becomes part of the
-record once the vet reviews and approves it.** The AI drafts everything; the
-clinician stays the source of truth.
+We start with **triage and front-desk automation**, because that is where revenue
+leakage begins. Missed calls, poor routing, incomplete intake, and unowned callbacks
+quietly cost clinics appointments, new clients, and follow-through. Vetra's voice
+agent answers the call, captures the request, surfaces urgency, applies the clinic's
+own rules, and hands the right person a clear next action.
+
+That is the wedge. The larger vision is an **AI-native operating layer** that makes
+each clinic's protocols executable across the systems it already runs — scheduling,
+records, follow-up, referrals, refills, and billing.
+
+**How it works today:** Vetra (voice agent **"Haley,"** built on
+[Vapi](https://vapi.ai)) answers the call while the front-desk team watches the
+transcript stream **live**. Mid-call they can bump up a question — *"ask if the rabies
+vaccine is current"* — and Haley asks it in real time. From there the captured context
+flows through the whole workflow: it creates or updates a **patient card**, drafts a
+**SOAP note**, derives an **invoice** from that note, and queues **follow-up tasks** —
+each one landing in a **Draft** state until a human reviews it.
+
+Every artifact the AI produces is a draft; it only becomes part of the record once a
+person reviews and approves it. **The AI drafts everything; the clinic stays the source
+of truth.**
 
 > Demo persona: **Dr. Martinez, Urbana Paws Clinic.** Voice agent: **"Haley."**
 
@@ -18,18 +34,20 @@ Live demo: **https://cv-vetra.vercel.app**
 
 ## The core flow
 
-1. **Live visit** — the exam-room voice agent joins the call; Vetra streams the
-   transcript in real time.
-2. **In-call, chart-aware Q&A** — during the visit the vet can ask the assistant
-   questions ("last vaccination date?", "is this lump new?") and get answers grounded
-   in the patient's chart.
-3. **On call-end, everything is auto-generated:**
+1. **Vetra answers the call** — the voice agent picks up, and the front desk sees the
+   transcript stream in real time from the moment the caller starts talking.
+2. **Live, human-in-the-loop Q&A** — mid-call the front-desk worker can push a question
+   to the agent (*"ask for vaccination records"*, *"confirm the pet's age"*) and Haley
+   asks the caller on the spot, no hold, no callback.
+3. **Context flows into the workflow** — the request is captured with urgency scored and
+   the clinic's routing rules applied, so nothing sits unowned.
+4. **On call-end, everything is auto-generated:**
+   - **Patient card** — created for new callers, updated for returning ones (memory means owners never repeat themselves)
    - **SOAP note** (Subjective / Objective / Assessment / Plan)
-   - **Patient card** update (vitals, problems, meds, history)
-   - **Follow-up tasks** (reminders, rechecks, owner messages)
    - **Invoice**, derived line-by-line from the SOAP plan
-4. **Draft → Reviewed gate** — none of it is final until the vet approves. Every
-   screen enforces the same review step.
+   - **Follow-up tasks** (reminders, rechecks, owner messages)
+5. **Draft → Reviewed gate** — none of it is final until a human approves. Every screen
+   enforces the same review step.
 
 ---
 

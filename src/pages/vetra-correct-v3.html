@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vetra — Your practice, on autopilot</title>
+<meta name="description" content="Vetra is the intelligence layer for veterinary practices. AI staff that answer every call, handle every refill, write every record, and follow up on every case.">
+<meta property="og:title" content="Vetra — Your practice, on autopilot">
+<meta property="og:description" content="The intelligence layer for veterinary practices. AI staff for the front desk, the pharmacy line, and everything after the call.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Schibsted+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/favicon.png">
+<meta property="og:image" content="assets/logo-full.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ══════════════ NAV ══════════════ -->
+<header class="nav-wrap">
+  <nav class="nav" aria-label="Main">
+    <a class="nav-logo" href="#top">
+      <img class="logo-img" src="assets/logo-full.png" alt="Vetra" width="458" height="165">
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="#team">The team</a>
+      <a href="#journey">How it works</a>
+      <a href="#calc">Numbers</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-cta-group">
+      <a class="btn btn-ghost btn-sm nav-call" href="tel:+14754440410">Call Vetra live</a>
+      <a class="btn btn-solid btn-sm" href="#demo">Book a demo</a>
+    </div>
+    <button class="nav-burger" id="navBurger" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span>
+    </button>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ══════════════ HERO ══════════════ -->
+<section class="hero" id="hero">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="hero-inner container">
+    <div class="hero-copy">
+      <p class="eyebrow reveal">The intelligence layer for veterinary practices</p>
+      <h1 class="reveal">Your practice,<br>on <em>autopilot.</em></h1>
+      <p class="hero-sub reveal">Vetra's AI staff answer every call, handle every refill, write every record, and follow up on every case — so your team can be with the pet in the room.</p>
+      <div class="hero-ctas reveal">
+        <a class="btn btn-solid" href="#demo">Book a 15-min demo</a>
+        <a class="btn btn-outline" href="tel:+14754440410">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          Hear it live &nbsp;·&nbsp; +1 (475) 444-0410
+        </a>
+      </div>
+      <p class="hero-note reveal">The number is real. Vetra picks up, triages a case, and books it on a real calendar.</p>
+    </div>
+
+    <!-- Animated intelligence network -->
+    <div class="hero-net reveal" aria-hidden="true">
+      <svg viewBox="0 0 520 440" class="net-svg" role="img" aria-label="Diagram: calls, refills and records flow through Vetra to bookings, records and follow-ups">
+        <defs>
+          <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#7FB8A0" stop-opacity="0.15"/>
+            <stop offset="1" stop-color="#7FB8A0" stop-opacity="0.6"/>
+          </linearGradient>
+        </defs>
+        <!-- input paths -->
+        <path class="net-path" id="p-in1" d="M84,90 C 180,90 190,205 252,214" />
+        <path class="net-path" id="p-in2" d="M70,180 C 160,180 180,214 250,219" />
+        <path class="net-path" id="p-in3" d="M70,268 C 160,268 180,228 250,223" />
+        <path class="net-path" id="p-in4" d="M84,352 C 180,352 190,240 252,228" />
+        <!-- output paths -->
+        <path class="net-path" id="p-out1" d="M288,214 C 350,205 360,98 442,92" />
+        <path class="net-path" id="p-out2" d="M290,219 C 360,214 380,182 452,178" />
+        <path class="net-path" id="p-out3" d="M290,223 C 360,228 380,262 452,264" />
+        <path class="net-path" id="p-out4" d="M288,228 C 350,240 360,344 442,350" />
+
+        <!-- traveling dots -->
+        <circle class="net-dot" r="4"><animateMotion dur="3.2s" repeatCount="indefinite" begin="0s"><mpath href="#p-in1"/></animateMotion></circle>
+        <circle class="net-dot" r="4"><animateMotion dur="3.4s" repeatCount="indefinite" begin="1.1s"><mpath href="#p-in2"/></animateMotion></circle>
+        <circle class="net-dot" r="4"><animateMotion dur="3.0s" repeatCount="indefinite" begin="0.6s"><mpath href="#p-in3"/></animateMotion></circle>
+        <circle class="net-dot" r="4"><animateMotion dur="3.6s" repeatCount="indefinite" begin="1.8s"><mpath href="#p-in4"/></animateMotion></circle>
+        <circle class="net-dot out" r="4"><animateMotion dur="3.2s" repeatCount="indefinite" begin="1.6s"><mpath href="#p-out1"/></animateMotion></circle>
+        <circle class="net-dot out" r="4"><animateMotion dur="3.0s" repeatCount="indefinite" begin="2.4s"><mpath href="#p-out2"/></animateMotion></circle>
+        <circle class="net-dot out" r="4"><animateMotion dur="3.4s" repeatCount="indefinite" begin="0.9s"><mpath href="#p-out3"/></animateMotion></circle>
+        <circle class="net-dot out" r="4"><animateMotion dur="3.1s" repeatCount="indefinite" begin="2.9s"><mpath href="#p-out4"/></animateMotion></circle>
+
+        <!-- hub -->
+        <g class="net-hub">
+          <circle cx="270" cy="221" r="42" class="hub-ring"/>
+          <circle cx="270" cy="221" r="30" class="hub-core"/>
+          <text x="270" y="229" text-anchor="middle" class="hub-v">V</text>
+        </g>
+      </svg>
+      <!-- input labels -->
+      <div class="net-label in" style="--x:2%;  --y:14%;">3 AM emergency call</div>
+      <div class="net-label in" style="--x:0%;  --y:36%;">Refill request</div>
+      <div class="net-label in" style="--x:0%;  --y:56%;">Lab result ready</div>
+      <div class="net-label in" style="--x:2%;  --y:76%;">Overflow at the desk</div>
+      <!-- output labels -->
+      <div class="net-label out" style="--x:84%; --y:14%;">ER transfer, context sent</div>
+      <div class="net-label out" style="--x:86%; --y:36%;">Booked on your calendar</div>
+      <div class="net-label out" style="--x:86%; --y:56%;">Written to your PIMS</div>
+      <div class="net-label out" style="--x:84%; --y:76%;">Owner follow-up sent</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ PROOF STRIP ══════════════ -->
+<section class="proof" id="proof">
+  <div class="container proof-inner">
+    <p class="proof-src eyebrow-dark">From live Vetra deployments</p>
+    <div class="proof-grid">
+      <div class="proof-item reveal">
+        <span class="proof-num" data-count="147">0</span>
+        <span class="proof-label">calls answered yesterday</span>
+      </div>
+      <div class="proof-item reveal">
+        <span class="proof-num" data-count="1174" data-prefix="$">0</span>
+        <span class="proof-label">revenue captured in a day</span>
+      </div>
+      <div class="proof-item reveal">
+        <span class="proof-num" data-count="100" data-suffix="%">0</span>
+        <span class="proof-label">first-ring pickup, all hours</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ CALL JOURNEY ══════════════ -->
+<section class="journey" id="journey">
+  <div class="container">
+    <p class="eyebrow-dark reveal">How it works</p>
+    <h2 class="reveal">One call, handled <em>end to end.</em></h2>
+    <p class="section-sub reveal">Not a message-taking service. The whole job — from ring to record.</p>
+  </div>
+  <div class="container journey-grid">
+    <div class="journey-steps">
+      <div class="j-step" data-step="0">
+        <span class="j-num">01</span>
+        <h3>Answer</h3>
+        <p>First ring, every time — 2 PM rush or 3 AM emergency. A calm voice that sounds like your clinic, not a phone tree.</p>
+      </div>
+      <div class="j-step" data-step="1">
+        <span class="j-num">02</span>
+        <h3>Triage</h3>
+        <p>The right questions for the species and symptoms. Urgency scored in real time. True emergencies routed to the nearest open ER with full context.</p>
+      </div>
+      <div class="j-step" data-step="2">
+        <span class="j-num">03</span>
+        <h3>Book</h3>
+        <p>Routine cases land directly on your calendar. Confirmations by text. Your team walks in to filled slots, not voicemails.</p>
+      </div>
+      <div class="j-step" data-step="3">
+        <span class="j-num">04</span>
+        <h3>Write back</h3>
+        <p>Every call becomes a structured record in your system — caller, patient, symptoms, action taken. This is where autopilot starts: the record is the fuel.</p>
+      </div>
+    </div>
+    <div class="journey-panel">
+      <div class="phone-card" id="phoneCard">
+        <div class="phone-head">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          <span id="phoneStatus">Incoming call · Maple St. Veterinary</span>
+        </div>
+        <div class="phone-body" id="phoneBody">
+          <!-- lines injected by JS -->
+        </div>
+        <div class="phone-foot" id="phoneFoot">Vetra · connected</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ AGENTS ══════════════ -->
+<section class="team" id="team">
+  <div class="container">
+    <p class="eyebrow reveal">Meet your new staff</p>
+    <h2 class="reveal">One team member for every<br>job your clinic <em>dreads.</em></h2>
+    <p class="section-sub light reveal">Hired one at a time. Each one owns a workflow completely.</p>
+
+    <div class="agent-tabs" role="tablist" aria-label="Vetra agents">
+      <button class="agent-tab is-active" role="tab" aria-selected="true" data-agent="0" id="tab-mochi" aria-controls="panel-mochi">
+        <span class="agent-avatar" style="--ac:#5BB98E">M</span> Mochi
+      </button>
+      <button class="agent-tab" role="tab" aria-selected="false" data-agent="1" id="tab-hazel" aria-controls="panel-hazel">
+        <span class="agent-avatar" style="--ac:#D9A64C">H</span> Hazel
+      </button>
+      <button class="agent-tab" role="tab" aria-selected="false" data-agent="2" id="tab-willow" aria-controls="panel-willow">
+        <span class="agent-avatar" style="--ac:#C88AA0">W</span> Willow
+      </button>
+      <button class="agent-tab" role="tab" aria-selected="false" data-agent="3" id="tab-pip" aria-controls="panel-pip">
+        <span class="agent-avatar" style="--ac:#7CA6D9">P</span> Pip
+      </button>
+    </div>
+
+    <div class="agent-stage">
+      <article class="agent-panel is-active" id="panel-mochi" role="tabpanel" aria-labelledby="tab-mochi">
+        <div class="agent-info">
+          <span class="status-pill on-duty">On duty</span>
+          <h3>Mochi <span class="agent-role">· Front desk</span></h3>
+          <p>Answers every call on the first ring, triages by species and symptom, books on your real calendar, transfers emergencies with full context. The agent you can call right now.</p>
+          <ul class="agent-caps">
+            <li>24/7 answering — no hold, no voicemail</li>
+            <li>Emergency detection &amp; ER routing</li>
+            <li>Booking, rescheduling, confirmations</li>
+            <li>Structured call records, written back</li>
+          </ul>
+          <a class="agent-link" href="tel:+14754440410">Call Mochi now →</a>
+        </div>
+        <div class="agent-vis" aria-hidden="true">
+          <div class="chat-vignette" data-agent-chat="0"></div>
+        </div>
+      </article>
+
+      <article class="agent-panel" id="panel-hazel" role="tabpanel" aria-labelledby="tab-hazel" hidden>
+        <div class="agent-info">
+          <span class="status-pill training">In training</span>
+          <h3>Hazel <span class="agent-role">· Pharmacy line</span></h3>
+          <p>Owns the refill calls your team loses hours to — and the margin your clinic loses to third-party refill lines that get paid per transaction, not to grow your practice.</p>
+          <ul class="agent-caps">
+            <li>Refill requests, checked against the chart</li>
+            <li>Doctor-approval queue, not auto-dispense</li>
+            <li>Pharmacy pickup coordination</li>
+            <li>Keeps the revenue in your building</li>
+          </ul>
+        </div>
+        <div class="agent-vis" aria-hidden="true">
+          <div class="chat-vignette" data-agent-chat="1"></div>
+        </div>
+      </article>
+
+      <article class="agent-panel" id="panel-willow" role="tabpanel" aria-labelledby="tab-willow" hidden>
+        <div class="agent-info">
+          <span class="status-pill training">In training</span>
+          <h3>Willow <span class="agent-role">· End-of-life care</span></h3>
+          <p>The hardest calls a clinic takes, handled with the patience they deserve. Built for warmth and time, not speed — scheduling and follow-up around euthanasia and hospice.</p>
+          <ul class="agent-caps">
+            <li>Unhurried scheduling for hard days</li>
+            <li>Quality-of-life conversation intake</li>
+            <li>Aftercare &amp; memorial coordination</li>
+            <li>Gentle follow-up, timed right</li>
+          </ul>
+        </div>
+        <div class="agent-vis" aria-hidden="true">
+          <div class="chat-vignette" data-agent-chat="2"></div>
+        </div>
+      </article>
+
+      <article class="agent-panel" id="panel-pip" role="tabpanel" aria-labelledby="tab-pip" hidden>
+        <div class="agent-info">
+          <span class="status-pill planned">Joining soon</span>
+          <h3>Pip <span class="agent-role">· Diagnostics &amp; follow-up</span></h3>
+          <p>Nothing falls through the cracks after the visit. Pip watches the loose ends — lab results, overdue rechecks, preventive-care gaps — and closes them before they become lost cases.</p>
+          <ul class="agent-caps">
+            <li>Lab-result follow-up calls</li>
+            <li>Overdue recheck recovery</li>
+            <li>Pre-visit prep for your DVMs</li>
+            <li>Preventive-care reminders that convert</li>
+          </ul>
+        </div>
+        <div class="agent-vis" aria-hidden="true">
+          <div class="chat-vignette" data-agent-chat="3"></div>
+        </div>
+      </article>
+    </div>
+
+    <p class="team-request reveal">Have a workflow you want off your team's plate? <a href="#demo">Tell us — we'll build the agent for it →</a></p>
+  </div>
+</section>
+
+<!-- ══════════════ PHASES / VISION ══════════════ -->
+<section class="phases" id="phases">
+  <div class="container">
+    <p class="eyebrow-dark reveal">Where this goes</p>
+    <h2 class="reveal">Autopilot isn't a feature.<br>It's a <em>direction.</em></h2>
+    <div class="phase-track">
+      <div class="phase-card reveal" data-phase="1">
+        <span class="phase-tag now">Now</span>
+        <h3>Answer everything</h3>
+        <p>Every call picked up, triaged, booked, and recorded. The front line runs itself — that's live today, on a number you can dial.</p>
+      </div>
+      <div class="phase-card reveal" data-phase="2">
+        <span class="phase-tag next">Next</span>
+        <h3>Operate the day</h3>
+        <p>Refills, follow-ups, records, reminders. The work after the call stops landing on your team, because every call already produced the record it needs.</p>
+      </div>
+      <div class="phase-card reveal" data-phase="3">
+        <span class="phase-tag later">Then</span>
+        <h3>Run on intelligence</h3>
+        <p>A practice that knows which cases are slipping, which revenue is leaking, and what tomorrow looks like — because everything upstream flows through one layer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ CALCULATOR ══════════════ -->
+<section class="calc" id="calc">
+  <div class="container calc-grid">
+    <div class="calc-copy">
+      <p class="eyebrow reveal">The math is real</p>
+      <h2 class="reveal">See what missed calls<br><em>actually</em> cost.</h2>
+      <p class="section-sub light reveal">Set the sliders to your practice. Industry averages pre-filled.</p>
+      <div class="calc-controls reveal">
+        <label class="slider-row">
+          <span class="slider-label">Calls per month <output id="outCalls">600</output></span>
+          <input type="range" id="inCalls" min="100" max="3000" step="50" value="600">
+        </label>
+        <label class="slider-row">
+          <span class="slider-label">Missed-call rate <output id="outMissed">25%</output></span>
+          <input type="range" id="inMissed" min="5" max="50" step="1" value="25">
+        </label>
+        <label class="slider-row">
+          <span class="slider-label">Callers who book if answered <output id="outConv">30%</output></span>
+          <input type="range" id="inConv" min="10" max="60" step="5" value="30">
+        </label>
+        <label class="slider-row">
+          <span class="slider-label">Average case value <output id="outValue">$350</output></span>
+          <input type="range" id="inValue" min="100" max="1000" step="25" value="350">
+        </label>
+      </div>
+    </div>
+    <div class="calc-result reveal">
+      <p class="calc-result-label">Recovered per month</p>
+      <p class="calc-result-num" id="calcMonthly">$0</p>
+      <div class="calc-breakdown">
+        <div><span id="calcMissedN">0</span> calls missed / month</div>
+        <div><span id="calcBookedN">0</span> bookings recovered</div>
+        <div><span id="calcAnnual">$0</span> / year</div>
+      </div>
+      <a class="btn btn-solid btn-wide" href="#demo">Get a clinic-specific projection</a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ INTEGRATIONS ══════════════ -->
+<section class="integrations" id="integrations">
+  <div class="container">
+    <p class="eyebrow-dark reveal">Works with your system</p>
+    <h2 class="reveal">Reads and writes to the PIMS<br>you already run.</h2>
+    <p class="section-sub reveal">No rip-and-replace. Vetra sits on top of your practice management system — schedules, records, and notes stay where they live.</p>
+    <div class="pims-wall reveal" role="list">
+      <span role="listitem">Cornerstone</span>
+      <span role="listitem">ezyVet</span>
+      <span role="listitem">Avimark</span>
+      <span role="listitem">Provet Cloud</span>
+      <span role="listitem">Shepherd</span>
+      <span role="listitem">Vetspire</span>
+      <span role="listitem">Digitail</span>
+      <span role="listitem">Pulse</span>
+      <span role="listitem">Hippo</span>
+      <span role="listitem">Rhapsody</span>
+    </div>
+    <p class="pims-note reveal">Integration depth varies by system — ask us about yours.</p>
+  </div>
+</section>
+
+<!-- ══════════════ LIVE DEMO / CTA ══════════════ -->
+<section class="demo-band" id="demo">
+  <div class="container demo-inner">
+    <div class="demo-copy">
+      <h2 class="reveal">Don't take the website's<br>word for it.</h2>
+      <p class="section-sub light reveal">Call the number. Vetra answers, triages a case, and books it on a real calendar — right now, no signup.</p>
+    </div>
+    <div class="demo-actions reveal">
+      <a class="demo-phone" href="tel:+14754440410">
+        <span class="pulse-dot big" aria-hidden="true"></span>
+        +1 (475) 444-0410
+      </a>
+      <span class="demo-or">or</span>
+      <a class="btn btn-cream" href="https://cal.com/samyak-shrimali/15min" target="_blank" rel="noopener">Book a 15-min walkthrough</a>
+      <a class="demo-video" href="https://www.youtube.com/watch?v=zNdgvyC2M6k" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9-5.5-9-5.5z"/></svg>
+        Watch the demo on YouTube
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ TRUST + FAQ ══════════════ -->
+<section class="trust-faq" id="faq">
+  <div class="container tf-grid">
+    <div class="trust-col">
+      <p class="eyebrow-dark reveal">The guardrails</p>
+      <h2 class="reveal">Built to assist,<br>not to <em>practice.</em></h2>
+      <ul class="trust-list">
+        <li class="reveal"><strong>Never diagnoses or prescribes.</strong> Medical decisions stay with your DVMs. Vetra captures, routes, and schedules.</li>
+        <li class="reveal"><strong>Your protocols, not ours.</strong> Triage runs on rules your clinic sets. Ambiguity escalates to a human, immediately.</li>
+        <li class="reveal"><strong>VCPR-aware by design.</strong> Built around veterinary practice regulations, including client-patient relationship rules on prescriptions and advice.</li>
+      </ul>
+    </div>
+    <div class="faq-col">
+      <details class="faq-item reveal">
+        <summary>Is this just phone answering?</summary>
+        <p>No — answering is where it starts, because the call is where everything in a clinic begins. Every answered call becomes a structured record, and that record powers the rest: refills, follow-ups, reminders, and eventually a practice that runs on its own data.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>Can we start with just after-hours?</summary>
+        <p>Yes. Most clinics start with after-hours or overflow coverage and expand from there. Vetra earns the front line one shift at a time.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>Do we need to change our PIMS?</summary>
+        <p>No. Vetra works alongside your current system and writes into it. Nothing gets replaced.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>What happens on a true emergency?</summary>
+        <p>Vetra detects it, transfers immediately to your on-call line or the nearest open ER, and sends the full triage context ahead — so nobody repeats themselves at 3 AM.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>How do we start?</summary>
+        <p>A 15-minute call. We learn how your clinic handles calls today, then set Vetra up around your process — usually live within a week.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <img class="logo-img logo-img-sm" src="assets/logo-full.png" alt="Vetra" width="458" height="165">
+      <span>The intelligence layer for veterinary practices</span>
+    </div>
+    <div class="footer-links">
+      <a href="tel:+14754440410">+1 (475) 444-0410</a>
+      <a href="https://cal.com/samyak-shrimali/15min" target="_blank" rel="noopener">Book a demo</a>
+      <a href="https://www.linkedin.com/company/vetra-ai-tech/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+    <p class="footer-fine">© 2026 Vetra. Built for the people who pick up the phone.</p>
+  </div>
+</footer>
+
+<script src="script.js" defer></script>
+</body>
+</html>

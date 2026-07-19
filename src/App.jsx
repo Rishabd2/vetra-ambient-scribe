@@ -22,6 +22,8 @@ import { MOCK_VISITS, answerFor } from './mock/visits.js'
 import CallDrawer from './pages/CallDrawer.jsx'
 import BookingModal from './pages/BookingModal.jsx'
 import Landing2 from './pages/Landing2.jsx'
+import VetraCorrectLanding from './pages/VetraCorrectLanding.jsx'
+import { resolveInitialView } from './navigation.js'
 import ActionsPopup from './pages/ActionsPopup.jsx'
 import RevenueUplift from './pages/RevenueUplift.jsx'
 import Settings from './pages/Settings.jsx'
@@ -256,7 +258,7 @@ export default function App() {
   }
 
   const openLanding = () => navigate('landing', '/')
-  const openDashboard = () => navigate('overview', '/')
+  const openDashboard = () => navigate('overview', '/dashboard')
 
   const store = {
     calls, appointments, followups, memoryRows, dashboardDate, vapiSync,
@@ -313,6 +315,10 @@ export default function App() {
   }
 
   if (view === 'landing') {
+    return <VetraCorrectLanding />
+  }
+
+  if (view === 'legacyLanding') {
     return <Landing2 onEnter={openDashboard} />
   }
 
@@ -480,16 +486,8 @@ function formatDashboardDate(date) {
 }
 
 function getInitialView() {
-  if (typeof window === 'undefined') return 'overview'
-  const params = new URLSearchParams(window.location.search)
-  if (window.location.pathname === '/revenue' || window.location.hash === '#revenue' || params.get('page') === 'revenue') {
-    return 'revenue'
-  }
-  // Marketing landing is still reachable at ?page=landing; default is the dashboard.
-  if (params.get('page') === 'landing' || window.location.hash === '#landing') {
-    return 'landing'
-  }
-  return 'overview'
+  if (typeof window === 'undefined') return 'landing'
+  return resolveInitialView(window.location)
 }
 
 function mergeAppointments(sampleAppointments, liveAppointments) {
